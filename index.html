@@ -1,0 +1,4602 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <base target="_top">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Live Class Portal</title>
+  <style>
+    :root {
+      --bg: #050816;
+      --bg-soft: #0f172a;
+      --accent: #22c55e;
+      --accent-soft: rgba(34,197,94,0.15);
+      --accent-danger: #ef4444;
+      --text: #e5e7eb;
+      --text-soft: #9ca3af;
+      --card: #020617;
+      --border: #1f2937;
+      --shadow-soft: 0 18px 40px rgba(15,23,42,0.65);
+      --radius-lg: 18px;
+      --radius-md: 10px;
+      --radius-pill: 999px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, Inter, sans-serif;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 40%, #000 100%);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      padding: 24px 12px;
+    }
+
+    .app-shell {
+      width: 100%;
+      max-width: 1200px;
+      background: linear-gradient(145deg, rgba(15,23,42,0.96), rgba(2,6,23,0.98));
+      border-radius: 24px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid rgba(148,163,184,0.18);
+      display: grid;
+      grid-template-columns: minmax(0, 2.1fr) minmax(0, 1.4fr);
+      overflow: hidden;
+    }
+
+    @media (max-width: 960px) {
+      .app-shell {
+        grid-template-columns: minmax(0, 1fr);
+      }
+    }
+
+    .left-pane,
+    .right-pane {
+      padding: 22px 24px 20px;
+    }
+
+    .left-pane {
+      border-right: 1px solid rgba(31,41,55,0.9);
+      backdrop-filter: blur(24px);
+    }
+
+    @media (max-width: 960px) {
+      .left-pane {
+        border-right: none;
+        border-bottom: 1px solid rgba(31,41,55,0.9);
+      }
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+
+    .title-block h1 {
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+      font-weight: 400;
+    }
+
+    .title-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.8);
+      margin-top: 6px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .dot-live {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #f97316 0, #ea580c 40%, #b91c1c 100%);
+      box-shadow: 0 0 14px rgba(248,113,113,0.9);
+    }
+
+    .mode-toggle {
+      display: inline-flex;
+      background: rgba(15,23,42,0.9);
+      padding: 3px;
+      border-radius: 999px;
+      border: 1px solid rgba(55,65,81,0.9);
+      position: relative;
+    }
+
+    .mode-toggle button {
+      position: relative;
+      border: none;
+      background: transparent;
+      color: var(--text-soft);
+      font-size: 12px;
+      padding: 6px 16px;
+      border-radius: 999px;
+      cursor: pointer;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.18s ease;
+    }
+
+    .mode-toggle button span.icon {
+      font-size: 14px;
+    }
+
+    .mode-toggle button.active {
+      color: #e5fef3;
+      font-weight: 500;
+    }
+
+    .mode-toggle-indicator {
+      position: absolute;
+      top: 3px;
+      bottom: 3px;
+      width: 50%;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #4ade80 0, #22c55e 35%, #15803d 100%);
+      box-shadow: 0 10px 30px rgba(34,197,94,0.5);
+      transition: transform 0.22s ease;
+      z-index: 1;
+    }
+
+    .mode-toggle.teacher-active .mode-toggle-indicator {
+      transform: translateX(100%);
+    }
+
+    .mode-toggle.student-active .mode-toggle-indicator {
+      transform: translateX(0);
+    }
+
+    .card {
+      background: radial-gradient(circle at top left, rgba(15,23,42,0.9), rgba(2,6,23,0.98));
+      border-radius: var(--radius-lg);
+      border: 1px solid rgba(31,41,55,0.95);
+      padding: 16px 16px 14px;
+      box-shadow: 0 14px 40px rgba(15,23,42,0.9);
+      margin-bottom: 12px;
+    }
+
+    .section-title {
+      font-size: 14px;
+      font-weight: 500;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--text-soft);
+      margin-bottom: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .chip {
+      font-size: 11px;
+      padding: 2px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.8);
+      color: var(--text-soft);
+    }
+
+    .input-row {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-soft);
+    }
+
+    input,
+    select {
+      background: rgba(15,23,42,0.9);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 7px 10px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.16s, box-shadow 0.16s, background 0.16s;
+    }
+
+    input:focus,
+    select:focus {
+      border-color: rgba(74,222,128,0.9);
+      box-shadow: 0 0 0 1px rgba(74,222,128,0.5);
+      background: rgba(15,23,42,0.98);
+    }
+
+    button.primary {
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 7px 18px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ecfdf5;
+      font-size: 13px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      box-shadow: 0 16px 35px rgba(22,163,74,0.7);
+      transition: transform 0.12s, box-shadow 0.12s, filter 0.12s;
+      white-space: nowrap;
+    }
+
+    button.primary:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+      box-shadow: 0 20px 40px rgba(22,163,74,0.85);
+    }
+
+    button.primary:active {
+      transform: translateY(0);
+      box-shadow: 0 10px 22px rgba(21,128,61,0.8);
+    }
+
+    button.secondary {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.9);
+      color: var(--text-soft);
+      padding: 7px 14px;
+      font-size: 12px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.12s, color 0.12s, border-color 0.12s;
+      white-space: nowrap;
+    }
+
+    button.secondary:hover {
+      background: rgba(31,41,55,0.95);
+      border-color: rgba(75,85,99,0.95);
+      color: var(--text);
+    }
+
+    button.danger {
+      background: rgba(127,29,29,0.92);
+      border-color: rgba(248,113,113,0.8);
+      color: #fee2e2;
+      box-shadow: 0 16px 32px rgba(127,29,29,0.7);
+    }
+
+    .status-bar {
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 6px;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+      font-size: 11px;
+    }
+
+    .pill-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%);
+    }
+
+    .pill-warn {
+      border-color: rgba(248,250,252,0.12);
+      background: rgba(15,23,42,0.9);
+    }
+
+    .video-shell {
+      position: relative;
+      margin-top: 12px;
+      border-radius: 18px;
+      border: 1px solid rgba(31,41,55,0.95);
+      background: radial-gradient(circle at top left, #020617, #020617 50%, #000 100%);
+      overflow: hidden;
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .video-shell iframe {
+      width: 100%;
+      height: 260px;
+      border: none;
+      border-radius: 14px;
+    }
+
+    @media (max-width: 480px) {
+      .video-shell iframe {
+        height: 220px;
+      }
+    }
+    /* Fullscreen layout base */
+    .video-shell.fullscreen-rotated {
+      position: relative;
+      overflow: visible; /* MCQ box ke liye safe */
+    }
+
+    @media (min-width: 769px) {
+      .video-shell.fullscreen-rotated iframe {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        border-radius: 0;
+        transform: none; /* Screen rotate nahi hogi */
+      }
+      .video-shell.fullscreen-rotated #mcqPopup {
+        transform: translate(-50%, -50%); /* MCQ sidha rahega */
+      }
+    }
+
+    @media (max-width: 768px) {
+      .video-shell.fullscreen-rotated iframe {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        width: 100vh;
+        height: 100vw;
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center center;
+        border-radius: 0;
+        object-fit: cover;
+      }
+
+      .video-shell.fullscreen-rotated #mcqPopup {
+        transform: translate(-50%, -50%) rotate(90deg);
+        transform-origin: center center;
+      }
+    }
+    .video-overlay-gradient {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.55), transparent 48%);
+      pointer-events: none;
+      opacity: 0.85;
+    }
+
+    .placeholder-text {
+      font-size: 13px;
+      color: var(--text-soft);
+      text-align: center;
+      padding: 18px;
+    }
+
+    .mcq-popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      min-width: 260px;
+      max-width: 320px;
+      background: rgba(15,23,42,0.98);
+      border-radius: 16px;
+      border: 1px solid rgba(55,65,81,0.95);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.85);
+      backdrop-filter: blur(16px);
+      cursor: grab;
+      user-select: none;
+      z-index: 20;
+    }
+
+    .mcq-popup.dragging {
+      cursor: grabbing;
+    }
+
+    .mcq-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 8px 11px 4px;
+      border-bottom: 1px solid rgba(31,41,55,0.95);
+    }
+
+    .mcq-header-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-soft);
+    }
+
+    .mcq-timer {
+      font-size: 11px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(107,114,128,0.9);
+      color: #e5e7eb;
+    }
+
+    .mcq-body {
+      padding: 8px 10px 10px;
+    }
+
+    .mcq-question {
+      font-size: 13px;
+      margin-bottom: 7px;
+    }
+
+    .mcq-options {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px;
+    }
+
+    .mcq-option {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(55,65,81,0.95);
+      background: rgba(15,23,42,0.96);
+      color: var(--text);
+      padding: 6px 10px;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      transition: background 0.12s, border-color 0.12s, transform 0.08s;
+    }
+
+    .mcq-option span.key {
+      width: 18px;
+      height: 18px;
+      border-radius: 999px;
+      border: 1px solid rgba(75,85,99,0.95);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .mcq-option:hover {
+      background: rgba(31,41,55,0.98);
+      border-color: rgba(75,85,99,0.95);
+      transform: translateY(-0.5px);
+    }
+
+    .mcq-option.selected {
+      border-color: rgba(74,222,128,0.95);
+      background: rgba(22,163,74,0.18);
+    }
+
+    .mcq-option.disabled {
+      opacity: 0.6;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .mcq-footer {
+      padding: 5px 10px 8px;
+      border-top: 1px solid rgba(31,41,55,0.95);
+      font-size: 11px;
+      color: var(--text-soft);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .tag {
+      font-size: 10px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      border: 1px solid rgba(55,65,81,0.9);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+    }
+
+    .tag-live {
+      border-color: rgba(248,250,252,0.2);
+      color: #f97316;
+    }
+
+    .right-pane {
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(15,23,42,0.96));
+    }
+
+    .right-pane-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .small-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .leaderboard {
+      margin-top: 8px;
+      background: rgba(15,23,42,0.98);
+      border-radius: 16px;
+      border: 1px solid rgba(31,41,55,0.95);
+      padding: 10px 10px 8px;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .lb-row {
+      display: grid;
+      grid-template-columns: 32px 1fr auto;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      padding: 5px 8px;
+      border-radius: 10px;
+      margin-bottom: 3px;
+    }
+
+    .lb-row:nth-child(1) {
+      background: linear-gradient(90deg, rgba(250,204,21,0.12), transparent);
+      border: 1px solid rgba(250,204,21,0.55);
+    }
+
+    .lb-row:nth-child(2) {
+      background: linear-gradient(90deg, rgba(156,163,175,0.16), transparent);
+    }
+
+    .lb-row:nth-child(3) {
+      background: linear-gradient(90deg, rgba(244,114,182,0.13), transparent);
+    }
+
+    .lb-rank {
+      font-size: 12px;
+      color: var(--text-soft);
+    }
+
+    .lb-name {
+      color: var(--text);
+    }
+
+    .lb-time {
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .lb-pill {
+      font-size: 11px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.96);
+      border: 1px solid rgba(55,65,81,0.9);
+      color: var(--text-soft);
+    }
+
+    .scrollbar-thin::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .scrollbar-thin::-webkit-scrollbar-thumb {
+      background: rgba(55,65,81,0.9);
+      border-radius: 999px;
+    }
+
+    .muted {
+      color: var(--text-soft);
+      font-size: 12px;
+    }
+
+    .spacer-10 {
+      height: 10px;
+    }
+
+    #chatCard {
+      /* card class se inherit karega */
+    }
+
+    #chatMessages {
+      scrollbar-width: thin;
+    }
+
+    #chatMessages .msg-row {
+      padding: 6px 0;
+      border-bottom: 1px solid rgba(31,41,55,0.6);
+    }
+
+    #chatMessages .msg-row:last-child {
+      border-bottom: none;
+    }
+
+    #chatMessages .msg-name {
+      font-weight: 500;
+      color: #4ade80;
+    }
+
+    #chatMessages .msg-time {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-left: 4px;
+    }
+
+    #chatMessages .msg-text {
+      color: var(--text);
+      margin-top: 2px;
+      word-break: break-word;
+    }
+
+
+    /* 🔥 FULLSCREEN FEATURES - UI MATCHED */
+
+    /* Top Controls Container */
+    .fullscreen-top-controls {
+      position: absolute;
+      top: 20px;
+      left: 20px;
+      right: 20px;
+      z-index: 100;
+      display: none;
+      justify-content: space-between;
+      align-items: center;
+      animation: fadeInDown 0.4s ease;
+    }
+
+    .video-shell.fullscreen-rotated .fullscreen-top-controls {
+      display: flex;
+    }
+
+    @keyframes fadeInDown {
+      from {
+        opacity: 0;
+        transform: translateY(-20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    /* Watch Time Display (matching chip style) */
+    .fullscreen-watch-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 16px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.9);
+      border: 1px solid rgba(55,65,81,0.8);
+      font-size: 13px;
+      color: var(--text);
+      backdrop-filter: blur(10px);
+      font-weight: 500;
+    }
+
+    .fullscreen-watch-chip .watch-icon {
+      color: #4ade80;
+      font-size: 14px;
+    }
+
+    .fullscreen-watch-chip .watch-value {
+      color: #4ade80;
+      font-weight: 600;
+    }
+
+    /* Right Controls Group */
+    .fullscreen-right-controls {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+    }
+
+    /* Exit & Chat Buttons (matching secondary button style) */
+    .fullscreen-btn {
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(55,65,81,0.9);
+      background: rgba(15,23,42,0.9);
+      color: var(--text);
+      padding: 8px 16px;
+      font-size: 13px;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      white-space: nowrap;
+      backdrop-filter: blur(10px);
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+
+    .fullscreen-btn:hover {
+      background: rgba(31,41,55,0.95);
+      border-color: rgba(75,85,99,0.95);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+    }
+
+    .fullscreen-btn.exit-btn:hover {
+      background: rgba(127,29,29,0.92);
+      border-color: rgba(248,113,113,0.8);
+      color: #fee2e2;
+    }
+
+    .fullscreen-btn.chat-btn.active {
+      background: rgba(22,163,74,0.2);
+      border-color: rgba(34,197,94,0.9);
+      color: #4ade80;
+    }
+
+    /* Chat Panel (Right Pane Clone) */
+    .fullscreen-chat-panel {
+      position: absolute;
+      top: 0;
+      right: -400px;
+      width: 400px;
+      height: 100%;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.98), rgba(15,23,42,0.99));
+      border-left: 2px solid rgba(31,41,55,0.9);
+      z-index: 99;
+      display: none;
+      flex-direction: column;
+      transition: right 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+      backdrop-filter: blur(24px);
+      padding: 22px 24px 20px;
+      overflow-y: auto;
+    }
+
+    .video-shell.fullscreen-rotated .fullscreen-chat-panel {
+      display: flex;
+    }
+
+    .fullscreen-chat-panel.open {
+      right: 0;
+      box-shadow: -10px 0 40px rgba(0,0,0,0.5);
+    }
+
+    /* Chat Panel Scrollbar */
+    .fullscreen-chat-panel::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fullscreen-chat-panel::-webkit-scrollbar-thumb {
+      background: rgba(55,65,81,0.9);
+      border-radius: 999px;
+    }
+
+    /* Clone exact right-pane styling */
+    .fs-chat-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .fs-chat-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+    }
+
+    .fs-chat-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 3px 9px;
+      border-radius: 999px;
+      background: rgba(15,23,42,0.95);
+      border: 1px solid rgba(55,65,81,0.9);
+      font-size: 11px;
+    }
+
+    .fs-chat-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%);
+    }
+
+    .fs-chat-dot.disabled {
+      background: radial-gradient(circle, #9ca3af 0, #6b7280 40%, #4b5563 100%);
+    }
+
+    /* Messages Area (matching card style) */
+    .fs-chat-messages {
+      margin-top: 8px;
+      background: rgba(15,23,42,0.98);
+      border-radius: 16px;
+      border: 1px solid rgba(31,41,55,0.95);
+      padding: 10px;
+      max-height: 400px;
+      overflow-y: auto;
+      margin-bottom: 12px;
+      scrollbar-width: thin;
+    }
+
+    .fs-chat-messages::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fs-chat-messages::-webkit-scrollbar-thumb {
+      background: rgba(55,65,81,0.9);
+      border-radius: 999px;
+    }
+
+    .fs-msg-row {
+      padding: 8px 0;
+      border-bottom: 1px solid rgba(31,41,55,0.6);
+      animation: slideInRight 0.3s ease;
+    }
+
+    .fs-msg-row:last-child {
+      border-bottom: none;
+    }
+
+    @keyframes slideInRight {
+      from {
+        opacity: 0;
+        transform: translateX(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateX(0);
+      }
+    }
+
+    .fs-msg-name {
+      font-weight: 500;
+      color: #4ade80;
+      font-size: 12px;
+    }
+
+    .fs-msg-time {
+      font-size: 11px;
+      color: var(--text-soft);
+      margin-left: 4px;
+    }
+
+    .fs-msg-text {
+      color: var(--text);
+      margin-top: 2px;
+      word-break: break-word;
+      font-size: 12px;
+    }
+
+    /* Input Area */
+    .fs-chat-input {
+      display: flex;
+      gap: 6px;
+    }
+
+    .fs-chat-input input {
+      flex: 1;
+      background: rgba(15,23,42,0.9);
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(55,65,81,0.9);
+      padding: 8px 12px;
+      color: var(--text);
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.16s, box-shadow 0.16s;
+    }
+
+    .fs-chat-input input:focus {
+      border-color: rgba(74,222,128,0.9);
+      box-shadow: 0 0 0 1px rgba(74,222,128,0.5);
+    }
+
+    .fs-chat-input button {
+      border: none;
+      border-radius: var(--radius-pill);
+      padding: 8px 16px;
+      background: linear-gradient(135deg, #22c55e, #16a34a);
+      color: #ecfdf5;
+      font-size: 12px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.12s;
+    }
+
+    .fs-chat-input button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.06);
+    }
+
+    /* Leaderboard in fullscreen */
+    .fs-leaderboard-section {
+      margin-top: 16px;
+    }
+
+    .fs-section-title {
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: var(--text-soft);
+      margin-bottom: 8px;
+    }
+
+    .fs-leaderboard {
+      background: rgba(15,23,42,0.98);
+      border-radius: 16px;
+      border: 1px solid rgba(31,41,55,0.95);
+      padding: 10px;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .fs-leaderboard::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .fs-leaderboard::-webkit-scrollbar-thumb {
+      background: rgba(55,65,81,0.9);
+      border-radius: 999px;
+    }
+    /* CLASS PLAYLIST SECTION */
+    .playlist-section {
+      margin-top: 16px;
+    }
+
+    .playlist-scroll {
+      display: flex;
+      gap: 12px;
+      overflow-x: auto;
+      padding: 8px 4px;
+      scrollbar-width: thin;
+    }
+
+    .playlist-scroll::-webkit-scrollbar {
+      height: 6px;
+    }
+
+    .playlist-scroll::-webkit-scrollbar-thumb {
+      background: rgba(55,65,81,0.9);
+      border-radius: 999px;
+    }
+
+    .playlist-item {
+      flex: 0 0 180px;
+      background: rgba(15,23,42,0.96);
+      border-radius: 12px;
+      border: 1px solid rgba(55,65,81,0.9);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      position: relative;
+    }
+
+    .playlist-item:hover {
+      transform: translateY(-4px);
+      border-color: rgba(74,222,128,0.9);
+      box-shadow: 0 8px 20px rgba(22,163,74,0.3);
+    }
+
+    .playlist-item.active {
+      border-color: rgba(34,197,94,0.9);
+      box-shadow: 0 0 0 2px rgba(34,197,94,0.3);
+    }
+
+    .playlist-thumb {
+      width: 100%;
+      height: 100px;
+      object-fit: cover;
+      background: radial-gradient(circle at top, rgba(15,23,42,0.9), rgba(2,6,23,0.98));
+    }
+
+    .playlist-play-overlay {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 100px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(0,0,0,0.4);
+      opacity: 0;
+      transition: opacity 0.2s;
+    }
+
+    .playlist-item:hover .playlist-play-overlay {
+      opacity: 1;
+    }
+
+    .playlist-play-icon {
+      width: 36px;
+      height: 36px;
+      background: rgba(34,197,94,0.9);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 14px;
+    }
+
+    .playlist-info {
+      padding: 8px 10px;
+    }
+
+    .playlist-number {
+      font-size: 11px;
+      color: var(--text-soft);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .draggable-row { cursor: grab; background: rgba(30,41,59,0.3); }
+    .draggable-row:active { cursor: grabbing; background: rgba(51,65,81,0.8); }
+    .drag-over { border-top: 2px solid #22c55e !important; }
+    /* Naya CSS Video Toggle aur Delete Button ke liye */
+    .clickable-title {
+      cursor: pointer;
+      user-select: none;
+      transition: color 0.2s, transform 0.2s;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+    .clickable-title:hover {
+      color: #4ade80;
+      transform: scale(1.02);
+    }
+    .playlist-del-btn {
+      background: rgba(220, 38, 38, 0.15);
+      border: 1px solid rgba(239, 68, 68, 0.5);
+      color: #f87171;
+      border-radius: 6px;
+      padding: 4px 6px;
+      font-size: 11px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .playlist-del-btn:hover {
+      background: rgba(220, 38, 38, 0.9);
+      color: white;
+    }
+    /* NAYA CSS - Smooth Table Row Expansion Ke Liye */
+    .history-expanded-div {
+      max-height: 0;
+      overflow: hidden;
+      transition: all 0.3s ease-in-out;
+      padding: 0 16px;
+      opacity: 0;
+    }
+    .history-expanded-div.open {
+      max-height: 400px; /* Scrollbar ke liye height */
+      overflow-y: auto;
+      padding: 12px 16px;
+      opacity: 1;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- LEFT student/teacher main actions -->
+    <div class="left-pane">
+      <div class="header">
+        <div class="title-block">
+          <h1>YT Class</h1>
+          <div class="title-pill">
+            <div class="dot-live"></div>
+            <span>Synced</span>
+          </div>
+        </div>
+        <div class="mode-toggle student-active" id="modeToggle">
+          <div class="mode-toggle-indicator"></div>
+          <button id="btnStudentMode" class="active" type="button">
+            <span class="icon">🎓</span>
+            Student
+          </button>
+          <button id="btnTeacherMode" type="button">
+            <span class="icon">🧑‍🏫</span>
+            Teacher
+          </button>
+        </div>
+      </div>
+
+      <!-- STUDENT VIEW -->
+      <div id="studentView">
+        <div class="card">
+          <div class="section-title">
+            <span>Student Login</span>
+            <span class="chip" id="studentDateChip">Date --</span>
+          </div>
+          <div class="input-row">
+            <div class="field">
+              <label for="studentUid">Student UID</label>
+              <input id="studentUid" autocomplete="off" placeholder="e.g. S10023">
+            </div>
+            <div class="field" style="flex:0 0 195px;"> <label>&nbsp;</label>
+              <div style="display:flex; gap:6px;">
+                <button id="btnAddPersonalVideo" class="secondary" type="button" style="padding:7px 12px; display:none;" title="Add Your Personal Video">
+                  <span>Add Video</span>
+                </button>
+                <button id="btnStudentLogin" class="primary" type="button" style="flex:1;">
+                  <span>Login &amp; Join</span>
+                </button>
+              </div>
+            </div>
+          </div>
+          <div class="status-bar">
+            <span id="studentStatus" class="muted">Waiting For UID</span>
+            <span class="pill">
+              <span class="pill-dot"></span>
+              <span id="attendanceStatusText">Attendance</span>
+            </span>
+          </div>
+        </div>
+        <div class="card" id="chaptersCard" style="display:none;">
+          <div class="section-title">
+            <span>Chapters</span>
+            <span class="chip">PLAYLIST</span>
+          </div>
+          <div class="input-row">
+            <div class="field">
+              <label for="subjectSelect">Subject</label>
+              <select id="subjectSelect">
+                <option value="">Select Subject</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="chapterSelect">Chapter</label>
+              <select id="chapterSelect" disabled>
+                <option value="">Select Chapter</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">
+            <span id="videoSectionTitle" class="clickable-title" title="Click To Toggle (Class Video / My Video)">Class Video</span>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span class="chip" id="watchTimeChip">Watch Time 0s</span>
+              <button id="btnFullscreen" class="secondary" type="button">Fullscreen</button>
+            </div>
+          </div>
+          <div class="video-shell" id="videoShell">
+            <div class="video-overlay-gradient"></div>
+            <div id="videoContainer">
+              <div class="placeholder-text">
+                Login With UID To Load Your Class Video.
+              </div>
+            </div>
+
+            <!-- MCQ Popup INSIDE videoShell -->
+            <div id="mcqPopup" class="mcq-popup" style="display:none;">
+              <div class="mcq-header" id="mcqDragHandle">
+                <div class="mcq-header-title">Live Question</div>
+                <div class="mcq-timer">
+                  Time left: <span id="mcqTimerText">--</span>s
+                </div>
+              </div>
+              <div class="mcq-body">
+                <div class="mcq-question" id="mcqQuestionText">
+                  Question text from teacher
+                </div>
+                <div class="mcq-options">
+                  <button class="mcq-option" data-option="A" type="button">
+                    <span class="key">A</span>
+                    <span>Option A</span>
+                  </button>
+                  <button class="mcq-option" data-option="B" type="button">
+                    <span class="key">B</span>
+                    <span>Option B</span>
+                  </button>
+                  <button class="mcq-option" data-option="C" type="button">
+                    <span class="key">C</span>
+                    <span>Option C</span>
+                  </button>
+                  <button class="mcq-option" data-option="D" type="button">
+                    <span class="key">D</span>
+                    <span>Option D</span>
+                  </button>
+                </div>
+              </div>
+              <div class="mcq-footer">
+                <span id="mcqFooterStatus">
+                  Tap once to answer. Single click only.
+                </span>
+                <span class="tag tag-live">LIVE</span>
+              </div>
+            </div>
+
+            <!-- 🔥 FULLSCREEN TOP CONTROLS -->
+            <div class="fullscreen-top-controls" id="fullscreenTopControls">
+              <!-- Left: Watch Time -->
+              <div class="fullscreen-watch-chip">
+                <span class="watch-icon">⏱️</span>
+                <span>WATCH TIME</span>
+                <span class="watch-value" id="fullscreenWatchValue">0s</span>
+              </div>
+
+              <!-- Right: Exit & Chat Buttons -->
+              <div class="fullscreen-right-controls">
+                <button class="fullscreen-btn chat-btn" id="fullscreenChatBtn">
+                  <span>💬</span>
+                  <span>CHAT</span>
+                </button>
+                <button class="fullscreen-btn exit-btn" id="exitFullscreenBtn">
+                  <span>✕</span>
+                  <span>EXIT</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 🔥 FULLSCREEN CHAT PANEL (Right Pane Clone) -->
+            <div class="fullscreen-chat-panel" id="fullscreenChatPanel">
+              <!-- Live Stats Header -->
+              <div class="fs-chat-header">
+                <div>
+                  <div class="fs-chat-title">Live Chat</div>
+                </div>
+                <div class="fs-chat-status" id="fsChatStatus">
+                  <span class="fs-chat-dot" id="fsChatDot"></span>
+                  <span id="fsChatStatusText">Disabled</span>
+                </div>
+              </div>
+
+              <!-- Chat Messages -->
+              <div class="fs-chat-messages" id="fsChatMessages">
+                <div style="color: var(--text-soft); font-size: 12px; text-align: center;">No messages yet.</div>
+              </div>
+
+              <!-- Chat Input (for student) -->
+              <div class="fs-chat-input" id="fsChatInputDiv" style="display: none;">
+                <input type="text" id="fsChatInput" placeholder="Type message...">
+                <button id="fsSendBtn">Send</button>
+              </div>
+
+              <!-- Leaderboard Section -->
+              <div class="fs-leaderboard-section">
+                <div class="fs-section-title">Leaderboard</div>
+                <div class="fs-leaderboard" id="fsLeaderboard">
+                  <div style="color: var(--text-soft); font-size: 12px;">
+                    When Teacher Marks Correct Option, Fastest Correct Responses Will Appear Here.
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+            <div class="spacer-10"></div>
+            <!-- CLASS PLAYLIST SECTION -->
+            <div class="card" id="playlistCard" style="display:none;">
+              <div class="section-title">
+                <span>Class Playlist</span>
+                <span class="chip" id="playlistCount">0 Videos</span>
+              </div>
+              <div class="playlist-section">
+                <div class="playlist-scroll" id="playlistScroll">
+                  <div class="placeholder-text" style="width:100%; padding:12px;">
+                    Login to view class playlist.
+                  </div>
+                </div>
+              </div>
+            </div>
+        </div>
+      </div>
+
+      <!-- TEACHER VIEW -->
+      <div id="teacherView" style="display:none;">
+        <div class="card">
+          <div class="section-title">
+            <span>Teacher Login</span>
+            <span class="chip" id="teacherDateChip">Date --</span>
+          </div>
+          <div class="input-row">
+            <div class="field">
+              <label for="teacherUid">Teacher UID</label>
+              <input type="password" id="teacherUid" autocomplete="off" placeholder="e.g. T10001">
+            </div>
+            <div class="field" style="flex:0 0 115px;">
+              <label>&nbsp;</label>
+              <div style="display:flex; gap:6px;">
+              <button id="btnQuizData" class="secondary" type="button" style="flex:1;">
+                <span>Quiz Data</span>
+              </button> 
+              <button id="btnTeacherLogin" class="primary" type="button">
+                <span>Login</span>
+              </button>
+              </div>
+            </div>
+          </div>
+          <div class="status-bar">
+            <span id="teacherStatus" class="muted">Not logged in.</span>
+            <span class="pill pill-warn">
+              <span>MCQ Timer</span>
+              <span id="teacherMcqTimerLabel">--</span>s
+            </span>
+          </div>
+        </div>
+      <div id="teacherProtectedControls" style="display:none;">
+        <div class="card">
+          <div class="section-title">
+            <span>Class Control</span>
+            <span class="chip">DATA SHEET</span>
+          </div>
+          <div class="input-row">
+            <div class="field">
+              <label for="teacherClassSelect">Class</label>
+              <select id="teacherClassSelect">
+                <option value="">Select Class</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>Manage Class Data</label>
+              <div style="display:flex; gap:6px;">
+                <button id="btnManageStudents" class="secondary" title="Manage Students (+)" type="button" style="flex:1; padding:7px 0; justify-content:center;">List</button>
+                <button id="btnManageYtData" class="secondary" title="Manage Teacher Data" type="button" style="flex:1; padding:7px 0; justify-content:center;">YT</button>
+                <button id="btnManagePlaylist" class="secondary" title="Manage Playlist" type="button" style="flex:1; padding:7px 0; justify-content:center;">Play</button>
+              </div>
+            </div>
+          </div>
+          <div class="input-row">
+            <div class="field">
+              <label for="teacherMcqTimer">MCQ Timer (Sec)</label>
+              <div style="display:flex; gap:6px;">
+                <input id="teacherMcqTimer" type="number" min="5" max="600" value="30" style="flex:1;">
+                <button id="btnManageStuVideo" class="secondary" title="Manage Student Videos" type="button" style="padding:7px; flex: 0 0 auto;">STU</button>
+                <button id="btnBlockStuVideo" class="danger" title="Block Class Students" type="button" style="padding:7px; flex: 0 0 auto; border-radius:25px;">🔒</button>
+              </div>
+            </div>
+            <div class="field" style="flex:0 0 180px;">
+              <label>&nbsp;</label>
+              <div style="display:flex; gap:8px;">
+                <button id="btnSaveVideo" class="secondary" type="button">Update Link</button>
+                <button id="btnSendOptions" class="primary" type="button">Send Options</button>
+              </div>
+            </div>
+          </div>
+          <div class="status-bar">
+            <span class="muted" id="teacherClassInfo">
+              Control Video &amp; MCQ.
+            </span>
+            <span class="pill pill-warn">
+              <span>Column E</span>
+            </span>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-title">
+            <span>Correct Answer</span>
+            <span class="chip">LIVE CLASS</span>
+          </div>
+          <div class="input-row" style="margin-bottom:8px;">
+            <div class="field">
+              <label>Mark Correct Option</label>
+              <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                <button class="secondary" data-correct="A" type="button">A</button>
+                <button class="secondary" data-correct="B" type="button">B</button>
+                <button class="secondary" data-correct="C" type="button">C</button>
+                <button class="secondary" data-correct="D" type="button">D</button>
+                <button class="secondary danger" id="btnClearLb" type="button">Clear</button>
+              </div>
+            </div>
+          </div>
+          <div class="status-bar">
+            <span id="lbStatus" class="muted">No Leaderboard Yet.</span>
+            <span class="pill">
+              <span class="pill-dot"></span>
+              <span>Fastest Correct Up</span>
+            </span>
+          </div>
+        </div>
+        <!-- MCQ PANEL for external paper selection -->
+        <div class="card" id="mcqPanelCard">
+          <div class="section-title">
+            <span>MCQs Panel</span>
+            <span class="chip">Paper ID</span>
+          </div>
+
+          <div style="display:flex; gap:8px; align-items:center; margin-bottom:8px;">
+            <div style="flex:1;">
+              <label style="font-size:11px; color:var(--text-soft);">Select Paper ID</label>
+              <select id="paperSelect" style="width:100%; padding:7px; border-radius:8px; border:1px solid rgba(55,65,81,0.9); background:rgba(15,23,42,0.9); color:var(--text);">
+                <option value="">- Select Paper -</option>
+              </select>
+            </div>
+            <div style="flex:0 0 120px;">
+              <label>&nbsp;</label>
+              <button id="btnLoadPaper" class="secondary" type="button">Load Questions</button>
+            </div>
+          </div>
+
+          <div id="paperQuestions" style="max-height:260px; overflow-y:auto; font-size:13px; color:var(--text-soft);">
+            <div class="muted">Select A Paper And Click "Load Questions".</div>
+          </div>
+        </div>
+      </div>
+      </div>
+    </div>
+
+    <!-- RIGHT stats + leaderboard -->
+    <div class="right-pane" id="rightPane">
+      
+      <!-- Live Stats Header -->
+      <div class="right-pane-header">
+        <div>
+          <div class="small-title">Live Stats</div>
+          <div class="muted" id="rightModeLabel">Student view</div>
+        </div>
+        <button id="btnRefreshPanel" class="secondary" type="button">Refresh</button>
+      </div>
+
+      <!-- STUDENT STATS CARD - MY STATISTICS (5 items: 3+2 layout) -->
+      <div class="card" id="studentStatsCard" style="display:none">
+        <div class="section-title">
+          <span>📊 My Statistics</span>
+          <span class="chip">Live Data</span>
+        </div>
+        
+        <!-- Row 1: 3 items -->
+        <div style="display:grid; grid-template-columns:1fr 1fr 1fr; gap:10px; margin-bottom:10px">
+          <!-- Today Answer -->
+          <div style="background:rgba(22,163,74,0.15); padding:10px; border-radius:12px; text-align:center; border-left:3px solid #22c55e">
+            <div style="font-size:9px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px">Today Ans</div>
+            <div style="font-size:18px; font-weight:600; color:#4ade80" id="studentTodayStat">0</div>
+          </div>
+          <!-- Total Answer -->
+          <div style="background:rgba(59,130,246,0.15); padding:10px; border-radius:12px; text-align:center; border-left:3px solid #3b82f6">
+            <div style="font-size:9px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px">Total Ans</div>
+            <div style="font-size:18px; font-weight:600; color:#60a5fa" id="studentTotalStat">0</div>
+          </div>
+          <!-- Total Present -->
+          <div style="background:rgba(168,85,247,0.15); padding:10px; border-radius:12px; text-align:center; border-left:3px solid #a855f7">
+            <div style="font-size:9px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px">Present</div>
+            <div style="font-size:18px; font-weight:600; color:#c084fc" id="studentPresentStat">0</div>
+          </div>
+        </div>
+        
+        <!-- Row 2: 2 items -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px">
+          <!-- Total Watch Time -->
+          <div style="background:rgba(249,115,22,0.15); padding:10px; border-radius:12px; text-align:center; border-left:3px solid #f97316">
+            <div style="font-size:9px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px">Total Watch</div>
+            <div style="font-size:18px; font-weight:600; color:#fb923c" id="studentTotalWatchStat">0m</div>
+          </div>
+          <!-- Today Watch Time -->
+          <div style="background:rgba(236,72,153,0.15); padding:10px; border-radius:12px; text-align:center; border-left:3px solid #ec4899">
+            <div style="font-size:9px; text-transform:uppercase; color:var(--text-soft); margin-bottom:4px">Today Watch</div>
+            <div style="font-size:18px; font-weight:600; color:#f472b6" id="studentTodayWatchStat">0m</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- TEACHER CARDS -->
+
+      <div class="card" id="mcqDistCard">
+        <div class="section-title">
+          <span>MCQ Distribution</span>
+          <span class="chip">Universal Option</span>
+        </div>
+        <div style="font-size:12px; color:var(--text-soft); margin-bottom:6px;">
+          Tick On Option A, B, C, D Update Per Sec.
+        </div>
+        <div id="mcqStats" style="font-size:12px;">
+          <div class="muted">No Active Question.</div>
+        </div>
+      </div>
+
+      <div class="spacer-10"></div>
+
+      <div class="card" id="answerStreamCard">
+        <div class="section-title">
+          <span>Answer Stream</span>
+          <span class="chip">Last 5</span>
+        </div>
+        <div id="answerStream" style="font-size:12px; max-height:120px; overflow-y:auto;">
+          <div class="muted">No Answers Yet.</div>
+        </div>
+      </div>
+
+      <div class="spacer-10"></div>
+
+      <!-- 🔥 LIVE CHAT SECTION -->
+      <div class="card" id="chatCard">
+        <div class="section-title">
+          <span>Live Chat</span>
+          <span id="chatStatusPill" class="pill">
+            <span class="pill-dot" style="background: radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%);"></span>
+            <span id="chatStatusText">Disabled</span>
+          </span>
+        </div>
+        
+        <!-- Chat Messages Area (Last 5) -->
+        <div id="chatMessages" style="max-height:140px; overflow-y:auto; margin-bottom:10px; font-size:12px; background:rgba(15,23,42,0.95); border-radius:10px; padding:8px; border:1px solid rgba(31,41,55,0.95);">
+          <div class="muted">No Messages Yet.</div>
+        </div>
+        
+        <!-- STUDENT: Message Input (disabled by default) -->
+        <div id="studentChatInput" style="display:none;">
+          <div style="display:flex; gap:6px;">
+            <input id="studentMessageInput" type="text" placeholder="Type message..." style="flex:1; font-size:13px; padding:8px;">
+            <button id="btnStudentSendMsg" class="primary" style="padding:8px 12px; font-size:12px;" type="button">Send</button>
+          </div>
+        </div>
+        
+        <!-- TEACHER: Message Input + Send + Disable -->
+        <div id="teacherChatInput" style="display:none;">
+          <div style="display:flex; gap:6px; margin-bottom:8px;">
+            <input id="teacherMessageInput" type="text" placeholder="Type message to class..." style="flex:1; font-size:13px; padding:8px;">
+            <button id="btnTeacherSendMsg" class="primary" style="padding:8px 12px; font-size:12px;" type="button">Send</button>
+            <button id="btnDisableChat" class="secondary danger" style="padding:8px 12px; font-size:12px;" type="button">Disable Chat</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="spacer-10"></div>
+      <!-- CLASS STATISTICS BUTTON (Teacher only) -->
+      <div class="card" id="classStatsCard" style="display:none">
+        <div class="section-title">
+          <span>Class Statistics</span>
+          <span class="chip">CV/CW</span>
+        </div>
+        <button id="btnViewClassStats" class="primary" type="button" style="width:100%">
+          <span>👁️</span> View All Students Stats
+        </button>
+      </div>
+
+      <!-- CLASS STATS MODAL (Hidden by default) -->
+      <div id="classStatsModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1000; align-items:center; justify-content:center; padding:20px">
+        <div style="background:rgba(15,23,42,0.98); border-radius:18px; border:1px solid rgba(55,65,81,0.9); max-width:600px; width:100%; max-height:80vh; overflow:hidden; display:flex; flex-direction:column">
+          <!-- Modal Header -->
+          <div style="padding:16px; border-bottom:1px solid rgba(31,41,55,0.9); display:flex; justify-content:space-between; align-items:center">
+            <div style="font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em">📊 Class Statistics</div>
+            <button id="btnCloseClassStats" class="secondary" style="padding:6px 12px; font-size:11px">✕ Close</button>
+          </div>
+          <!-- Summary Row -->
+          <div id="classStatsSummary" style="padding:12px 16px; background:rgba(22,163,74,0.1); display:grid; grid-template-columns:repeat(4,1fr); gap:8px; font-size:11px; text-align:center">
+            <div><div style="color:var(--text-soft)">Students</div><div style="font-weight:600; color:#4ade80" id="summaryStudents">0</div></div>
+            <div><div style="color:var(--text-soft)">Avg Present</div><div style="font-weight:600; color:#c084fc" id="summaryAvgPresent">0</div></div>
+            <div><div style="color:var(--text-soft)">Avg Total</div><div style="font-weight:600; color:#fb923c" id="summaryAvgTotal">0m</div></div>
+            <div><div style="color:var(--text-soft)">Avg Today</div><div style="font-weight:600; color:#f472b6" id="summaryAvgToday">0m</div></div>
+          </div>
+          <!-- Table -->
+          <div style="padding:12px 16px; overflow-y:auto; flex:1">
+            <table style="width:100%; border-collapse:collapse; font-size:12px">
+              <thead>
+                <tr style="border-bottom:2px solid rgba(55,65,81,0.9)">
+                  <th style="text-align:left; padding:8px 4px; color:var(--text-soft)">Name</th>
+                  <th style="text-align:center; padding:8px 4px; color:#c084fc">Present</th>
+                  <th style="text-align:center; padding:8px 4px; color:#fb923c">Total Watch</th>
+                  <th style="text-align:center; padding:8px 4px; color:#f472b6">Today Watch</th>
+                </tr>
+              </thead>
+              <tbody id="classStatsTableBody">
+                <tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-soft)">Click Button To Load Data</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+      <!-- STUDENT HISTORY MODAL (NEW) -->
+      <div id="studentHistoryModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1150; align-items:center; justify-content:center; padding:20px">
+        <div style="background:rgba(15,23,42,0.98); border-radius:18px; border:1px solid rgba(55,65,81,0.9); max-width:650px; width:100%; max-height:80vh; overflow:hidden; display:flex; flex-direction:column; box-shadow:0 20px 50px rgba(0,0,0,0.8);">
+          
+          <!-- Modal Header -->
+          <div style="padding:16px; border-bottom:1px solid rgba(31,41,55,0.9); display:flex; justify-content:space-between; align-items:center">
+            <div id="historyModalTitle" style="font-size:14px; font-weight:600; text-transform:uppercase; letter-spacing:0.1em; color:#e5e7eb;">Report</div>
+            <button onclick="document.getElementById('studentHistoryModal').style.display='none'" class="secondary" style="padding:6px 12px; font-size:11px">✕ Close</button>
+          </div>
+          
+          <!-- Modal Body (Data Yaha Load Hoga) -->
+          <div id="historyModalBody" class="scrollbar-thin" style="padding:16px; overflow-y:auto; flex:1; font-size:13px; color:var(--text-soft);">
+            Loading...
+          </div>
+
+        </div>
+      </div>
+      <div id="quizDataModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:1100; align-items:center; justify-content:center; padding:20px;">
+        <div style="background:rgba(15,23,42,0.98); border-radius:18px; border:1px solid rgba(55,65,81,0.9); width:100%; max-width:900px; max-height:90vh; display:flex; flex-direction:column; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+          
+          <div style="padding:16px; border-bottom:1px solid rgba(31,41,55,0.9); display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:16px; font-weight:600; color:#e5e7eb; text-transform:uppercase; letter-spacing:0.05em;">
+              📋 Quiz Data Reports
+            </div>
+            <button id="btnCloseQuizData" class="secondary" style="padding:6px 12px; font-size:12px;">✕ Close</button>
+          </div>
+
+          <div style="padding:0; flex:1; overflow:auto; scroll-behavior:smooth;" class="scrollbar-thin">
+            <div style="min-width:850px;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px; color:#e5e7eb;">
+              <thead style="background:rgba(30,41,59,0.9); position:sticky; top:0;">
+                <tr>
+                  <th style="text-align:left; padding:12px; border-bottom:1px solid #334155; color:#94a3b8;">UID</th>
+                  <th style="text-align:left; padding:12px; border-bottom:1px solid #334155; color:#94a3b8;">Student Name</th>
+                  <th style="text-align:left; padding:12px; border-bottom:1px solid #334155; color:#94a3b8;">Class</th>
+                  <th style="text-align:left; padding:12px; border-bottom:1px solid #334155; color:#94a3b8; width:25%;">Latest Report (Col I)</th>
+                  <th style="text-align:left; padding:12px; border-bottom:1px solid #334155; color:#94a3b8; width:25%;">Oldest Report (Col J)</th>
+                </tr>
+              </thead>
+              <tbody id="quizDataTableBody">
+                </tbody>
+            </table>
+            </div>
+          </div>
+          
+          <div style="padding:10px; border-top:1px solid rgba(31,41,55,0.9); text-align:right; font-size:11px; color:#64748b;">
+             ✅ = Attempted In Last 24 Hours | ❌ = Older Than 24 Hours
+          </div>
+        </div>
+      </div>
+      <div class="spacer-10"></div>
+      <!-- LEADERBOARD (dono modes me visible) -->
+      <div class="right-pane-header" style="margin-bottom:4px;">
+        <div class="small-title">Leaderboard</div>
+        <span class="lb-pill" id="lbSummary">--</span>
+      </div>
+      <div class="leaderboard scrollbar-thin" id="leaderboard">
+        <div class="muted">
+          When Teacher Marks Correct Option, Fastest Correct Responses Will Appear Here.
+        </div>
+      </div>
+      <div id="managementModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.9); z-index:1200; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:rgba(15,23,42,0.98); border-radius:18px; border:1px solid rgba(55,65,81,0.9); width:100%; max-width:900px; max-height:90vh; display:flex; flex-direction:column; box-shadow: 0 20px 50px rgba(0,0,0,0.8);">
+        
+        <div style="padding:16px; border-bottom:1px solid rgba(31,41,55,0.9); display:flex; justify-content:space-between; align-items:center;">
+          <div id="manageModalTitle" style="font-size:16px; font-weight:600; color:#e5e7eb; text-transform:uppercase; letter-spacing:0.05em;">
+            📋 Manage Data
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button id="btnAddNewRow" class="primary" style="padding:6px 12px; font-size:12px;">➕ Add New</button>
+            <button id="btnCloseManageModal" class="secondary" style="padding:6px 12px; font-size:12px;">✕ Close</button>
+          </div>
+        </div>
+
+        <div style="padding:0; flex:1; overflow:auto;" class="scrollbar-thin">
+          <div style="min-width:700px;">
+            <table style="width:100%; border-collapse:collapse; font-size:12px; color:#e5e7eb;">
+              <thead id="manageTableHeader" style="background:rgba(30,41,59,0.9); position:sticky; top:0;">
+                </thead>
+              <tbody id="manageTableBody">
+                </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+    </div>
+    <div id="toastBox" style=" position:fixed; top:20px; left:50%; transform:translateX(-50%); z-index:9999; display:flex; flex-direction:column;
+      align-items:center; gap:10px; pointer-events:none;"></div>
+    <div id="saveLinkModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1300; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:rgba(15,23,42,0.98); border-radius:18px; border:1px solid rgba(55,65,81,0.9); max-width:400px; width:100%; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.8);">
+        <div style="font-size:16px; font-weight:600; color:#e5e7eb; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">
+          🔗 Update Class Link
+        </div>
+        <div style="margin-bottom:16px;">
+          <input type="text" id="popupVideoUrlInput" placeholder="Paste YouTube Link Here..." style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(55,65,81,0.9); background:rgba(2,6,23,0.9); color:var(--text); outline:none;">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button id="btnCancelSaveLink" class="secondary" style="padding:8px 16px;">Cancel</button>
+          <button id="btnConfirmSaveLink" class="primary" style="padding:8px 16px;">Update Link</button>
+        </div>
+      </div>
+    </div>
+    <div id="addVideoModal" style="display:none; position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(0,0,0,0.85); z-index:1300; align-items:center; justify-content:center; padding:20px;">
+      <div style="background:rgba(15,23,42,0.98); border-radius:18px; border:1px solid rgba(55,65,81,0.9); max-width:400px; width:100%; padding:20px; box-shadow:0 20px 40px rgba(0,0,0,0.8);">
+        
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+          <div style="font-size:16px; font-weight:600; color:#e5e7eb; text-transform:uppercase; letter-spacing:0.05em;">
+            Save Video
+          </div>
+          <div style="display:flex; gap:8px;">
+            <button id="btnConfirmSaveVideo" class="primary" style="padding:6px 16px; font-size:12px;">Save</button>
+            <button id="btnCloseVideoModal" class="secondary" style="padding:6px 12px; font-size:12px;">Close</button>
+          </div>
+        </div>
+
+        <div style="display:flex; flex-direction:column; gap:12px;">
+          <input type="text" id="personalVideoTitle" placeholder="Video Title (e.g. Important Revision)" style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(55,65,81,0.9); background:rgba(2,6,23,0.9); color:var(--text); outline:none;">
+          
+          <input type="text" id="personalVideoUrl" placeholder="Paste YouTube Link Here..." style="width:100%; padding:10px; border-radius:8px; border:1px solid rgba(55,65,81,0.9); background:rgba(2,6,23,0.9); color:var(--text); outline:none;">
+        </div>
+      </div>
+    </div>
+  <!-- CLIENT JS LOGIC -->
+  <script>
+    // GLOBAL STATE
+    let currentPlayingUrl = '';
+    let currentPlayingTitle = '';
+    let currentMode = 'student';
+    let mcqStatsInterval = null;
+    let lastShownMcqId = null;
+    let chatRefreshInterval = null;
+    let chatEnabled = false;
+    const rightPane = document.getElementById('rightPane');
+    const chatCard = document.getElementById('chatCard');
+    const chatMessages = document.getElementById('chatMessages');
+    const chatStatusText = document.getElementById('chatStatusText');
+    const chatStatusPill = document.getElementById('chatStatusPill');
+
+    // STUDENT CHAT
+    const studentChatInput = document.getElementById('studentChatInput');
+    const studentMessageInput = document.getElementById('studentMessageInput');
+    const btnStudentSendMsg = document.getElementById('btnStudentSendMsg');
+
+    // TEACHER CHAT
+    const teacherChatInput = document.getElementById('teacherChatInput');
+    const teacherMessageInput = document.getElementById('teacherMessageInput');
+    const btnTeacherSendMsg = document.getElementById('btnTeacherSendMsg');
+    const btnDisableChat = document.getElementById('btnDisableChat');
+    const student = {
+      uid: null,
+      name: null,
+      className: null,
+      rowIndex: null,
+      watchSeconds: 0,
+      realWatchSeconds: 0,
+      watchIntervalId: null,
+      mcqActive: false,
+      mcqStartTime: null,
+      mcqAnswered: false,
+      currentMcqId: null,
+      isBlocked: false
+    };
+
+    const teacher = {
+      uid: null,
+      classes: [],
+      currentClass: null
+    };
+
+    let ytPlayer = null;
+    let currentPlaylistIndex = -1;
+    let playlistVideos = [];
+    let mcqTimerInterval = null;
+    let mcqRemaining = 0;
+    let mcqPollInterval = null;
+  // ==================== NETLIFY API CONNECTION ====================
+  // Niche diye gaye URL ko apne naye Google Apps Script Web App URL se replace karein
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwseJEH5y-RpzO69EvV82KFdA9VORqYGgeIv-W-siVeKjXUiK4y0eFkl-BtIvkDTj8/exec"; 
+
+  // Ye code google.script.run ko mimic karega taki aapko apna purana code change na karna pade
+  const google = {
+    script: {
+      get run() {
+        let successHandler = null;
+        let failureHandler = null;
+        
+        return new Proxy({}, {
+          get: function(target, prop) {
+            if (prop === 'withSuccessHandler') {
+              return function(cb) { successHandler = cb; return this; };
+            }
+            if (prop === 'withFailureHandler') {
+              return function(cb) { failureHandler = cb; return this; };
+            }
+            
+            // Jab koi actual backend function call ho
+            return function(...args) {
+              fetch(SCRIPT_URL, {
+                method: 'POST',
+                body: JSON.stringify({ action: prop, args: args }),
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' } // CORS error se bachne ke liye text/plain
+              })
+              .then(res => res.json())
+              .then(data => {
+                if (data.error) {
+                  if (failureHandler) failureHandler(data.error);
+                  else console.error("Backend Error:", data.error);
+                } else {
+                  if (successHandler) successHandler(data.result);
+                }
+              })
+              .catch(err => {
+                if (failureHandler) failureHandler(err.toString());
+                else console.error("Fetch Error:", err);
+              });
+            };
+          }
+        });
+      }
+    }
+  };
+    // UTILS
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+
+    function showToast(message, type = 'info') {
+      const toastBox = document.getElementById('toastBox');
+      if (!toastBox) return;
+
+      const toast = document.createElement('div');
+
+      let bgColor = '#334155';
+      if (type === 'success') bgColor = '#16a34a';
+      if (type === 'warn') bgColor = '#f59e0b';
+      if (type === 'error') bgColor = '#dc2626';
+
+      toast.style.cssText = `
+        background:${bgColor};
+        color:#fff;
+        padding:10px 16px;
+        border-radius:12px;
+        font-size:13px;
+        box-shadow:0 10px 25px rgba(0,0,0,0.4);
+        opacity:0;
+        transform:translateX(20px);
+        transition:all .3s ease;
+      `;
+
+      toast.textContent = message;
+      toastBox.appendChild(toast);
+
+      setTimeout(() => {
+        toast.style.opacity = '1';
+        toast.style.transform = 'translateY(0)';
+      }, 50);
+
+      setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translateY(-20px)';
+        setTimeout(() => toast.remove(), 300);
+      }, 3000);
+    }
+
+    function todayString() {
+      const d = new Date();
+      const dd = String(d.getDate()).padStart(2,'0');
+      const mm = String(d.getMonth()+1).padStart(2,'0');
+      const yy = d.getFullYear();
+      return `${dd}-${mm}-${yy}`;
+    }
+
+    // FULLSCREEN helper
+    function toggleFullscreen() {
+      const elem = document.getElementById('videoShell');
+      if (!elem) return;
+
+      if (document.fullscreenElement || document.webkitFullscreenElement || document.msFullscreenElement) {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+        return;
+      }
+
+      if (elem.requestFullscreen) {
+        elem.requestFullscreen();
+      } else if (elem.webkitRequestFullscreen) {
+        elem.webkitRequestFullscreen();
+      } else if (elem.msRequestFullscreen) {
+        elem.msRequestFullscreen();
+      }
+    }
+
+
+    // 🔥 FULLSCREEN FEATURES JAVASCRIPT
+    const fullscreenTopControls = document.getElementById('fullscreenTopControls');
+    const fullscreenWatchValue = document.getElementById('fullscreenWatchValue');
+    const exitFullscreenBtn = document.getElementById('exitFullscreenBtn');
+    const fullscreenChatBtn = document.getElementById('fullscreenChatBtn');
+    const fullscreenChatPanel = document.getElementById('fullscreenChatPanel');
+    const fsChatMessages = document.getElementById('fsChatMessages');
+    const fsChatInput = document.getElementById('fsChatInput');
+    const fsChatInputDiv = document.getElementById('fsChatInputDiv');
+    const fsSendBtn = document.getElementById('fsSendBtn');
+    const fsChatStatusText = document.getElementById('fsChatStatusText');
+    const fsChatDot = document.getElementById('fsChatDot');
+    const fsLeaderboard = document.getElementById('fsLeaderboard');
+
+    let fsChatPanelOpen = false;
+
+    // Exit Fullscreen Handler
+    if (exitFullscreenBtn) {
+      exitFullscreenBtn.addEventListener('click', function() {
+        if (document.exitFullscreen) {
+          document.exitFullscreen();
+        } else if (document.webkitExitFullscreen) {
+          document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+          document.msExitFullscreen();
+        }
+      });
+    }
+
+    // Update Watch Time in Fullscreen (every second)
+    setInterval(function() {
+      if (fullscreenWatchValue && student.uid && student.realWatchSeconds > 0) {
+        fullscreenWatchValue.textContent = formatWatchTime(student.realWatchSeconds);
+      }
+    }, 1000);
+
+    // Chat Panel Toggle
+    if (fullscreenChatBtn && fullscreenChatPanel) {
+      fullscreenChatBtn.addEventListener('click', function() {
+        fsChatPanelOpen = !fsChatPanelOpen;
+        if (fsChatPanelOpen) {
+          fullscreenChatPanel.classList.add('open');
+          fullscreenChatBtn.classList.add('active');
+          syncFullscreenData();
+        } else {
+          fullscreenChatPanel.classList.remove('open');
+          fullscreenChatBtn.classList.remove('active');
+        }
+      });
+    }
+
+    // Sync all data from main right pane to fullscreen panel
+    function syncFullscreenData() {
+      if (!fsChatPanelOpen) return;
+
+      // 1. Sync Chat Status
+      if (fsChatStatusText && fsChatDot) {
+        fsChatStatusText.textContent = chatEnabled ? 'Enabled' : 'Disabled';
+        if (chatEnabled) {
+          fsChatDot.classList.remove('disabled');
+        } else {
+          fsChatDot.classList.add('disabled');
+        }
+      }
+
+      // 2. Sync Chat Messages
+      if (fsChatMessages && chatMessages) {
+        const msgRows = chatMessages.querySelectorAll('.msg-row');
+        if (msgRows.length === 0) {
+          fsChatMessages.innerHTML = '<div style="color: var(--text-soft); font-size: 12px; text-align: center;">No messages yet.</div>';
+        } else {
+          let html = '';
+          msgRows.forEach(function(row) {
+            const nameEl = row.querySelector('.msg-name');
+            const textEl = row.querySelector('.msg-text');
+            const timeEl = row.querySelector('.msg-time');
+
+            const name = nameEl ? nameEl.textContent : 'Unknown';
+            const text = textEl ? textEl.textContent : '';
+            const time = timeEl ? timeEl.textContent : '';
+
+            html += '<div class="fs-msg-row">';
+            html += '<div><span class="fs-msg-name">' + name + '</span><span class="fs-msg-time">' + time + '</span></div>';
+            html += '<div class="fs-msg-text">' + text + '</div>';
+            html += '</div>';
+          });
+          fsChatMessages.innerHTML = html;
+          fsChatMessages.scrollTop = fsChatMessages.scrollHeight;
+        }
+      }
+
+      // 3. Sync Leaderboard
+      if (fsLeaderboard && leaderboardEl) {
+        fsLeaderboard.innerHTML = leaderboardEl.innerHTML;
+      }
+
+      // 4. Update Chat Input Visibility
+      if (fsChatInputDiv && student.uid) {
+        if (chatEnabled) {
+          fsChatInputDiv.style.display = 'flex';
+        } else {
+          fsChatInputDiv.style.display = 'none';
+        }
+      }
+    }
+
+    // Send Message from Fullscreen Chat
+    if (fsSendBtn && fsChatInput) {
+      fsSendBtn.addEventListener('click', function() {
+        sendFullscreenMessage();
+      });
+
+      fsChatInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          sendFullscreenMessage();
+        }
+      });
+    }
+
+    function sendFullscreenMessage() {
+      if (!fsChatInput || !student.uid || !chatEnabled) return;
+
+      const msg = fsChatInput.value.trim();
+      if (!msg) return;
+
+      const name = student.name || ('Student ' + student.uid);
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.ok) {
+            fsChatInput.value = '';
+            setTimeout(function() {
+              syncFullscreenData();
+            }, 500);
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.log('Message send error:', err);
+        })
+        .sendStudentMessage(student.uid, student.name, student.className, msg)
+    }
+
+    // Auto-sync every 2 seconds when panel is open
+    setInterval(function() {
+      if (fsChatPanelOpen) {
+        syncFullscreenData();
+      }
+    }, 2000);
+
+    // MODE SWITCH
+    const modeToggle = document.getElementById('modeToggle');
+    const btnStudentMode = document.getElementById('btnStudentMode');
+    const btnTeacherMode = document.getElementById('btnTeacherMode');
+    const studentView = document.getElementById('studentView');
+    const teacherView = document.getElementById('teacherView');
+    const rightModeLabel = document.getElementById('rightModeLabel');
+    document.addEventListener('fullscreenchange', handleFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
+    document.addEventListener('msfullscreenchange', handleFullscreenChange);
+
+    function updateModeUI() {
+      if (currentMode === 'student') {
+        studentView.style.display = '';
+        teacherView.style.display = 'none';
+        rightModeLabel.textContent = 'Student view';
+        btnStudentMode.classList.add('active');
+        btnTeacherMode.classList.remove('active');
+        modeToggle.classList.add('student-active');
+        modeToggle.classList.remove('teacher-active');
+        const studentStatsCard = document.getElementById('studentStatsCard');
+        if (studentStatsCard) studentStatsCard.style.display = student.uid ? 'block' : 'none';
+        
+        // HIDE teacher cards in student mode
+        const mcqDistCard = document.getElementById('mcqDistCard');
+        const answerStreamCard = document.getElementById('answerStreamCard');
+        if (mcqDistCard) mcqDistCard.style.display = 'none';
+        if (answerStreamCard) answerStreamCard.style.display = 'none';
+        
+        if (rightPane) rightPane.style.display = '';
+        studentChatInput.style.display = chatEnabled ? 'block' : 'none';
+        teacherChatInput.style.display = 'none';
+      } else {
+        // 🔥 TEACHER MODE SECURITY CHECK
+        const isTLoggedIn = !!teacher.uid;
+        
+        const studentStatsCard = document.getElementById('studentStatsCard');
+        const mcqDistCard = document.getElementById('mcqDistCard');
+        const answerStreamCard = document.getElementById('answerStreamCard');
+        const protectedControls = document.getElementById('teacherProtectedControls');
+        
+        if (studentStatsCard) studentStatsCard.style.display = 'none';
+        
+        // Sirf login hone par hi ye panels dikhayen
+        if (mcqDistCard) mcqDistCard.style.display = isTLoggedIn ? '' : 'none';
+        if (answerStreamCard) answerStreamCard.style.display = isTLoggedIn ? '' : 'none';
+        if (classStatsCard) classStatsCard.style.display = (isTLoggedIn && teacher.currentClass) ? 'block' : 'none';
+        if (protectedControls) protectedControls.style.display = isTLoggedIn ? 'block' : 'none';
+
+        studentView.style.display = 'none';
+        teacherView.style.display = '';
+        rightModeLabel.textContent = 'Teacher view';
+        btnStudentMode.classList.remove('active');
+        btnTeacherMode.classList.add('active');
+        modeToggle.classList.remove('student-active');
+        modeToggle.classList.add('teacher-active');
+        
+        if (rightPane) rightPane.style.display = '';
+        studentChatInput.style.display = 'none';
+        
+        // Chat input bhi tabhi dikhega jab login ho
+        teacherChatInput.style.display = isTLoggedIn ? 'block' : 'none';
+      }
+    }
+
+    btnStudentMode.addEventListener('click', () => {
+      currentMode = 'student';
+      updateModeUI();
+    });
+
+    btnTeacherMode.addEventListener('click', () => {
+      currentMode = 'teacher';
+      updateModeUI();
+    });
+
+    // STUDENT LOGIN + VIDEO
+    const studentUidInput = document.getElementById('studentUid');
+    const btnStudentLogin = document.getElementById('btnStudentLogin');
+    const videoContainer = document.getElementById('videoContainer');
+    const watchTimeChip = document.getElementById('watchTimeChip');
+    const studentStatus = document.getElementById('studentStatus');
+    const attendanceStatusText = document.getElementById('attendanceStatusText');
+    const btnFullscreen = document.getElementById('btnFullscreen');
+    if (btnFullscreen) {
+      btnFullscreen.addEventListener('click', toggleFullscreen);
+    }
+
+    function handleFullscreenChange() {
+      const shell = document.getElementById('videoShell');
+      if (!shell) return;
+
+      const isFs =
+        document.fullscreenElement === shell ||
+        document.webkitFullscreenElement === shell ||
+        document.msFullscreenElement === shell;
+
+      if (isFs) {
+        shell.classList.add('fullscreen-rotated');
+      } else {
+        shell.classList.remove('fullscreen-rotated');
+      }
+    }
+
+    function resetStudentState() {
+      if (student.watchIntervalId) {
+        clearInterval(student.watchIntervalId);
+      }
+      if (mcqPollInterval) {
+        clearInterval(mcqPollInterval);
+        mcqPollInterval = null;
+      }
+      student.uid = null;
+      student.className = null;
+      student.rowIndex = null;
+      student.watchSeconds = 0;
+      student.realWatchSeconds = 0;
+      student.watchIntervalId = null;
+      student.mcqActive = false;
+      student.mcqStartTime = null;
+      student.mcqAnswered = false;
+      watchTimeChip.textContent = 'Watch Time 0s';
+      studentStatus.textContent = 'Waiting For UID';
+      attendanceStatusText.textContent = 'Attendance';
+      videoContainer.innerHTML = '<div class="placeholder-text">Login With UID To Load Your Class Video.</div>';
+      // Is function ke aakhri me ye add karein:
+      const chaptersCard = document.getElementById('chaptersCard');
+      if (chaptersCard) chaptersCard.style.display = 'none';
+      const subjSelect = document.getElementById('subjectSelect');
+      const chapSelect = document.getElementById('chapterSelect');
+      if (subjSelect) subjSelect.innerHTML = '<option value="">Select Subject</option>';
+      if (chapSelect) {
+          chapSelect.innerHTML = '<option value="">Select Chapter</option>';
+          chapSelect.disabled = true;
+      }
+    }
+
+    function extractVideoId(url) {
+      if (!url || typeof url !== 'string') return null;
+      // Remove surrounding whitespace and params after & if present
+      url = url.trim();
+      // Common patterns
+      const patterns = [
+        /(?:youtu\.be\/)([A-Za-z0-9_-]{11})/,
+        /[?&]v=([A-Za-z0-9_-]{11})/,
+        /\/embed\/([A-Za-z0-9_-]{11})/,
+        /\/v\/([A-Za-z0-9_-]{11})/,
+        /\/live\/([A-Za-z0-9_-]{11})/
+      ];
+      for (const p of patterns) {
+        const m = url.match(p);
+        if (m && m[1]) return m[1];
+      }
+      // fallback: last 11 chars if looks like an id
+      const last11 = url.slice(-11);
+      if (/^[A-Za-z0-9_-]{11}$/.test(last11)) return last11;
+      return null;
+    }
+
+    // Idempotent load of YouTube iframe API and safe player init
+    let _ytApiLoading = false;
+    let _ytApiReadyCallbacks = [];
+
+    function ensureYouTubeApi(callback) {
+      if (window.YT && window.YT.Player) {
+        callback();
+        return;
+      }
+      _ytApiReadyCallbacks.push(callback);
+      if (_ytApiLoading) return;
+      _ytApiLoading = true;
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      tag.onload = function() {
+        // nothing: API calls onYouTubeIframeAPIReady
+      };
+      document.body.appendChild(tag);
+
+      // define global ready handler only once
+      if (!window.__ytIframeApiInstalled) {
+        window.__ytIframeApiInstalled = true;
+        window.onYouTubeIframeAPIReady = function() {
+          _ytApiLoading = false;
+          // flush callbacks
+          const cbs = _ytApiReadyCallbacks.slice();
+          _ytApiReadyCallbacks.length = 0;
+          cbs.forEach(cb => {
+            try { cb(); } catch (e) { console.error(e); }
+          });
+        };
+      }
+    }
+
+    function initYouTubePlayer(videoId) {
+      // if no videoId, show placeholder
+      if (!videoId) {
+        videoContainer.innerHTML = '<div class="placeholder-text">Invalid YouTube link.</div>';
+        return;
+      }
+
+      const iframeHtml = `
+        <iframe id="ytPlayer"
+          src="https://www.youtube.com/embed/${videoId}?enablejsapi=1&rel=0&modestbranding=1&playsinline=1"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          allowfullscreen>
+        </iframe>`;
+      videoContainer.innerHTML = iframeHtml;
+
+      ensureYouTubeApi(function() {
+        // create player only if iframe exists and YT available
+        const iframe = document.getElementById('ytPlayer');
+        if (!iframe || !window.YT || !window.YT.Player) return;
+
+        // destroy previous player if exists
+        try {
+          if (ytPlayer && ytPlayer.destroy) {
+            ytPlayer.destroy();
+          }
+        } catch (e) { console.warn(e); }
+
+        ytPlayer = new YT.Player('ytPlayer', {
+          events: {
+            onStateChange: onPlayerStateChange
+          }
+        });
+      });
+    }
+
+    // safer onPlayerStateChange (guard ytPlayer)
+    function onPlayerStateChange(event) {
+      try {
+        if (!event || typeof event.data === 'undefined') return;
+        
+        if (event.data === YT.PlayerState.PLAYING) {
+          
+          // 🔥 NAYA LOGIC: ORIGINAL YOUTUBE TITLE FETCH KARNA 🔥
+          if (ytPlayer && ytPlayer.getVideoData) {
+            const vData = ytPlayer.getVideoData();
+            if (vData && vData.title) {
+              // Jo variable hum backend bhejte hain, usme real title dal do
+              currentPlayingTitle = vData.title; 
+            }
+          }
+          
+          // PLAYING: Start real watch time counter
+          if (student.watchIntervalId) {
+            clearInterval(student.watchIntervalId);
+          }
+          
+          student.watchIntervalId = setInterval(() => {
+            try {
+              // REAL WATCH TIME COUNTER (seek ignore karega)
+              student.realWatchSeconds++;
+              
+              const current = (ytPlayer && ytPlayer.getCurrentTime) ? ytPlayer.getCurrentTime() : 0;
+              student.watchSeconds = Math.floor(current);
+              
+              const displayTime = formatWatchTime(student.realWatchSeconds);
+              watchTimeChip.textContent = 'Watch Time ' + displayTime;
+              
+              if (fullscreenWatchValue) {
+                fullscreenWatchValue.textContent = displayTime;
+              }
+              
+              if (student.uid && student.realWatchSeconds > 0 && student.realWatchSeconds % 300 === 0) {
+                try {
+                  google.script.run.updateWatchTime(student.uid, 5, currentPlayingTitle, currentPlayingUrl);
+                } catch(e) {
+                  console.warn('Watch time update failed:', e);
+                }
+              }
+            } catch (e) { 
+              console.log('Watch interval error:', e); 
+            }
+          }, 1000);
+          
+        } else {
+          // PAUSED/ENDED/BUFFERING: Stop counter
+          if (student.watchIntervalId) {
+            clearInterval(student.watchIntervalId);
+            student.watchIntervalId = null;
+          }
+        }
+      } catch (e) { 
+        console.error('Player state change error:', e); 
+      }
+    }
+
+    function formatWatchTime(sec) {
+      sec = Math.floor(sec || 0);
+      if (sec < 60) return sec + 's';
+      
+      const min = Math.floor(sec / 60);
+      const remSec = sec % 60;
+      if (min < 60) {
+        return remSec ? (min + 'm ' + remSec + 's') : (min + 'm');
+      }
+      
+      const hrs = Math.floor(min / 60);
+      const remMin = min % 60;
+      return remMin ? (hrs + 'h ' + remMin + 'm') : (hrs + 'h');
+    }
+
+    function startMcqPolling(pollMs = 1000) {
+      if (mcqPollInterval) {
+        clearInterval(mcqPollInterval);
+        mcqPollInterval = null;
+      }
+      if (!student.className) return;
+
+      function fetchOnce() {
+        // Skip polling while an MCQ is actively shown
+        if (student.mcqActive) {
+          console.log('MCQ active — skipping poll');
+          return;
+        }
+
+        // Call server
+        try {
+          google.script.run
+            .withSuccessHandler(function(res) {
+              try {
+                if (!res || !res.ok || !res.active) return;
+                const mcqId = res.startTimestamp || res.question || (res.question || '') + '|' + (res.durationSec||'');
+                if (lastShownMcqId === mcqId) {
+                  console.log('Already displayed this MCQ');
+                  return;
+                }
+                // show only if no active MCQ
+                if (!student.mcqActive) {
+                  lastShownMcqId = mcqId;
+                  student.currentMcqId = mcqId;
+                  showMcqPopup(res);
+                }
+              } catch (e) { console.error(e); }
+            })
+            .withFailureHandler(function(err) {
+              console.log('MCQ poll error', err);
+            })
+            .getActiveMcqForClass(student.className);
+        } catch (e) {
+          console.error('Error calling mcq poll', e);
+        }
+      }
+
+      // immediate fetch, then interval
+      fetchOnce();
+      mcqPollInterval = setInterval(fetchOnce, pollMs);
+    }
+
+    // ✅ MODIFIED: Student Login function - ADD playlist loading
+    btnStudentLogin.addEventListener('click', () => {
+      const uid = studentUidInput.value.trim();
+      if (!uid) {
+        showToast('Please Enter UID', 'warn');
+        return;
+      }
+      resetStudentState();
+      student.uid = uid;
+      studentStatus.textContent = 'Checking UID & Marking Attendance…';
+
+      google.script.run
+        .withFailureHandler(function(err) {
+          console.log(err);
+          studentStatus.textContent = 'Error: ' + err.message;
+        })
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            studentStatus.textContent = res && res.message ? res.message : 'Login Failed';
+            attendanceStatusText.textContent = 'Attendance --';
+            return;
+          }
+          student.className = res.className;
+          student.name = res.studentName || ('Student ' + uid);
+          student.rowIndex = res.rowIndex;
+
+          // ✅ LOAD STUDENT STATS after login (FIXED - NO INCREMENT)
+          setTimeout(() => {
+            const studentStatsCard = document.getElementById('studentStatsCard');
+            if (studentStatsCard) studentStatsCard.style.display = 'block';
+            
+            // केवल statistics load करें, increment नहीं
+            if (student.uid) {
+              loadStudentStatistics();
+            }
+          }, 500);
+
+          student.isBlocked = res.isBlocked || false;
+          studentStatus.textContent = 'Welcome, UID ' + uid + ' | Class ' + student.className + (student.isBlocked ? ' [BLOCKED]' : '');
+          attendanceStatusText.textContent = 'Attendance P (Today)';
+
+          // Agar Student Blocked hai to sab normal cheezein hide karke Priority dikhayenge
+          if (student.isBlocked) {
+            document.getElementById('chaptersCard').style.display = 'none';
+            document.getElementById('btnAddPersonalVideo').style.display = 'none';
+            videoSectionTitle.textContent = 'Priority Videos Only';
+            videoSectionTitle.style.pointerEvents = 'none'; // My video toggle disable kar diya
+            videoContainer.innerHTML = '<div class="placeholder-text">Your Access Is Blocked. Showing Priority Videos.</div>';
+            loadPriorityVideos(student.className);
+          } else {
+            // NORMAL FLOW (Pehle jaisa tha)
+            const vid = extractVideoId(res.videoUrl);
+            if (vid) {
+              currentPlayingUrl = res.videoUrl;
+              currentPlayingTitle = 'Class Video';
+              initYouTubePlayer(vid);
+            } else {
+              videoContainer.innerHTML = '<div class="placeholder-text">No / Invalid Video Link In YT DATA For Class ' + student.className + '.</div>';
+            }
+            document.getElementById('btnAddPersonalVideo').style.display = 'flex';
+            loadPlaylist(student.className);
+            const chaptersCard = document.getElementById('chaptersCard');
+            if (chaptersCard) chaptersCard.style.display = 'block';
+            loadSubjectChapters(student.className);
+          }
+          
+          startMcqPolling();
+          startChatPolling();
+        })
+        .studentLogin(uid);
+    });
+
+    // Load playlist for class
+    function loadPlaylist(className) {
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res.ok && res.videos && res.videos.length > 0) {
+            playlistVideos = res.videos;
+            renderPlaylist(res.videos);
+            document.getElementById('playlistCard').style.display = 'block';
+            document.getElementById('playlistCount').textContent = res.videos.length + ' Videos';
+          } else {
+            document.getElementById('playlistCard').style.display = 'none';
+          }
+        })
+        .withFailureHandler(function(err) {
+          console.error('Playlist load error:', err);
+          document.getElementById('playlistCard').style.display = 'none';
+        })
+        .getClassPlaylist(className);
+    }
+    // Render playlist items
+    function renderPlaylist(videos) {
+      const container = document.getElementById('playlistScroll');
+      container.innerHTML = '';
+      
+      videos.forEach((video, index) => {
+        const item = document.createElement('div');
+        item.className = 'playlist-item';
+        
+        item.innerHTML = `
+          <div style="position:relative;">
+            <img src="${video.thumbnail}" class="playlist-thumb" alt="${video.title}" 
+                 onerror="this.src='https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg'">
+            <div class="playlist-play-overlay">
+              <div class="playlist-play-icon">▶</div>
+            </div>
+          </div>
+          <div class="playlist-info">
+            <div class="playlist-number">${video.title}</div>
+          </div>
+        `;
+        
+        item.onclick = function() {
+          loadVideoInPlayer(video.url, index, video.title);
+        };
+        
+        container.appendChild(item);
+      });
+    }
+    // --- LOAD PRIORITY VIDEOS (For Blocked Students) ---
+    function loadPriorityVideos(className) {
+      document.getElementById('playlistCard').style.display = 'block';
+      document.getElementById('playlistCard').querySelector('.section-title span').textContent = 'Priority Videos';
+      const container = document.getElementById('playlistScroll');
+      container.innerHTML = '<div class="muted" style="padding:10px;">Loading Priority Videos...</div>';
+      
+      google.script.run
+        .withSuccessHandler(res => {
+          if (res.ok && res.videos && res.videos.length > 0) {
+            playlistVideos = res.videos;
+            document.getElementById('playlistCount').textContent = res.videos.length + ' Priority Videos';
+            renderPlaylist(res.videos); // Use existing playlist renderer
+            // Auto play the first priority video
+            loadVideoInPlayer(res.videos[0].url, 0, res.videos[0].title);
+          } else {
+            document.getElementById('playlistCount').textContent = '0 Videos';
+            container.innerHTML = '<div class="placeholder-text" style="width:100%; padding:12px;">No Priority Videos Assigned.</div>';
+          }
+        })
+        .getPriorityVideosOnly(className);
+    }
+
+    // --- TEACHER: STU (Manage STUDENT VIDEO) Button ---
+    document.getElementById('btnManageStuVideo').addEventListener('click', () => {
+      const cls = document.getElementById('teacherClassSelect').value;
+      if (!cls) { showToast('Select Class First', 'warn'); return; }
+      
+      currentManageContext = 'STU_VIDEO'; // New context
+      manageTitle.textContent = `📹 Manage Student Videos (${cls})`;
+      thead.innerHTML = '<tr><th style="padding:10px; text-align:left;">UID</th><th style="padding:10px; text-align:left;">Name</th><th style="padding:10px; text-align:left;">Status (Col D)</th><th style="padding:10px; text-align:center;">Action</th></tr>';
+      manageModal.style.display = 'flex';
+      showLoadingTable(4);
+      
+      google.script.run.withSuccessHandler(res => {
+        if(!res.ok) { tbody.innerHTML = `<tr><td colspan="4">${res.message}</td></tr>`; return; }
+        
+        let html = '';
+        res.data.forEach(r => {
+          html += `<tr data-row="${r.row}" class="draggable-row" style="border-bottom:1px solid #334155;">
+            <td style="padding:8px;" class="cell-uid">${r.uid}</td>
+            <td style="padding:8px;" class="cell-name">${r.name}</td>
+            <td style="padding:8px;" class="cell-status">${r.status}</td>
+            <td style="padding:8px; text-align:center;">
+               <button class="secondary edit-btn" onclick="editStuVideoRow(this)">✏️</button>
+            </td>
+          </tr>`;
+        });
+        if(res.data.length === 0) html = '<tr><td colspan="4" style="text-align:center;" class="muted">No Students Found</td></tr>';
+        tbody.innerHTML = html;
+      }).getManageStudentVideoData(cls);
+    });
+
+    function editStuVideoRow(btn) {
+      const tr = btn.closest('tr');
+      const status = tr.querySelector('.cell-status').textContent;
+      tr.querySelector('.cell-status').innerHTML = buildInput(status, 'status');
+      btn.outerHTML = `<button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="saveStuVideoRow(this)">💾</button>`;
+    }
+
+    function saveStuVideoRow(btn) {
+      const tr = btn.closest('tr');
+      const payload = {
+        row: parseInt(tr.getAttribute('data-row')),
+        uid: tr.querySelector('.cell-uid').textContent,
+        name: tr.querySelector('.cell-name').textContent,
+        status: tr.querySelector('input[data-field="status"]').value
+      };
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManageStuVideo').click();
+      }).saveManageStudentVideoData(payload);
+    }
+
+    // --- TEACHER: LOCK Button (Block Students) ---
+    document.getElementById('btnBlockStuVideo').addEventListener('click', () => {
+      const cls = document.getElementById('teacherClassSelect').value;
+      if (!cls) { showToast('Select Class First', 'warn'); return; }
+      
+      if (!confirm(`Are You Sure You Want To BLOCK All Students Of Class ${cls}?`)) return;
+      
+      showToast('Blocking Students...', 'ok');
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'err');
+      }).blockClassStudentsInVideo(cls);
+    });
+    // ==========================================
+    // PERSONAL SAVED VIDEO LOGIC
+    // ==========================================
+    const btnAddPersonalVideo = document.getElementById('btnAddPersonalVideo');
+    const addVideoModal = document.getElementById('addVideoModal');
+    const btnCloseVideoModal = document.getElementById('btnCloseVideoModal');
+    const btnConfirmSaveVideo = document.getElementById('btnConfirmSaveVideo');
+    const videoSectionTitle = document.getElementById('videoSectionTitle');
+    
+    let showingMyVideo = false;
+
+    // Modal Events
+    btnAddPersonalVideo.addEventListener('click', () => {
+      if(!student.uid) { showToast('Please Login First', 'warn'); return; }
+      addVideoModal.style.display = 'flex';
+    });
+
+    btnCloseVideoModal.addEventListener('click', () => {
+      addVideoModal.style.display = 'none';
+    });
+
+    // Save Video
+    btnConfirmSaveVideo.addEventListener('click', () => {
+      const title = document.getElementById('personalVideoTitle').value.trim();
+      const url = document.getElementById('personalVideoUrl').value.trim();
+      if(!title || !url) { showToast('Please Enter Title & URL', 'warn'); return; }
+
+      btnConfirmSaveVideo.textContent = 'Saving...';
+      google.script.run
+        .withSuccessHandler(res => {
+          btnConfirmSaveVideo.textContent = 'Save';
+          if(res.ok) {
+            showToast('Video Saved Successfully!', 'ok');
+            document.getElementById('personalVideoTitle').value = '';
+            document.getElementById('personalVideoUrl').value = '';
+            addVideoModal.style.display = 'none';
+            // Agar My Video mode on hai toh list turant refresh kar de
+            if(showingMyVideo) loadMyVideos();
+          } else {
+            showToast(res.message, 'warn');
+          }
+        })
+        .withFailureHandler(err => {
+          btnConfirmSaveVideo.textContent = 'Save';
+          showToast('Error saving video', 'err');
+        })
+        .saveStudentPersonalVideo(student.uid, student.name, student.className, title, url);
+    });
+
+    // Toggle Class Video <-> My Video
+    videoSectionTitle.addEventListener('click', () => {
+      if(!student.uid) { showToast('Please Login First', 'warn'); return; }
+      if(student.isBlocked) { 
+        showToast('You Are Restricted To Priority Videos Only.', 'err'); 
+        return; 
+      }
+      showingMyVideo = !showingMyVideo;
+      if(showingMyVideo) {
+        videoSectionTitle.textContent = 'My Video';
+        videoSectionTitle.style.color = '#4ade80';
+        document.getElementById('playlistCard').style.display = 'block';
+        document.getElementById('playlistCard').querySelector('.section-title span').textContent = 'My Saved Videos';
+        document.getElementById('playlistCount').textContent = 'Loading...';
+        loadMyVideos();
+      } else {
+        videoSectionTitle.textContent = 'Class Video';
+        videoSectionTitle.style.color = 'var(--text-soft)';
+        document.getElementById('playlistCard').querySelector('.section-title span').textContent = 'Class Playlist';
+        document.getElementById('playlistCount').textContent = playlistVideos.length + ' Videos';
+        renderPlaylist(playlistVideos);
+      }
+    });
+
+    // Load Personal Videos
+    function loadMyVideos() {
+      const container = document.getElementById('playlistScroll');
+      container.innerHTML = '<div class="muted" style="padding:10px;">Loading Your Saved Videos...</div>';
+      
+      google.script.run
+        .withSuccessHandler(res => {
+          if(res.ok && res.videos && res.videos.length > 0) {
+            document.getElementById('playlistCount').textContent = res.videos.length + ' Videos';
+            renderMyPlaylist(res.videos);
+          } else {
+            document.getElementById('playlistCount').textContent = '0 Videos';
+            container.innerHTML = '<div class="placeholder-text" style="width:100%; padding:12px;">You Have No Saved Videos.</div>';
+          }
+        })
+        .getStudentPersonalVideos(student.uid);
+    }
+
+    // Render Personal Videos with Delete Button
+    function renderMyPlaylist(videos) {
+      const container = document.getElementById('playlistScroll');
+      container.innerHTML = '';
+      
+      videos.forEach((video, index) => {
+        const item = document.createElement('div');
+        item.className = 'playlist-item';
+        const safeTitle = video.title.replace(/'/g, "\\'");
+        item.innerHTML = `
+          <div style="position:relative;" onclick="loadVideoInPlayer('${video.url}', ${index}, '${safeTitle}')">
+            <img src="${video.thumbnail}" class="playlist-thumb" onerror="this.src='https://img.youtube.com/vi/dQw4w9WgXcQ/hqdefault.jpg'">
+            <div class="playlist-play-overlay">
+              <div class="playlist-play-icon">▶</div>
+            </div>
+          </div>
+          <div class="playlist-info" style="display:flex; justify-content:space-between; align-items:center; gap:8px;">
+            <div class="playlist-number" style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1; font-weight:500; color:var(--text); font-size:12px;">${video.title}</div>
+            <button class="playlist-del-btn" onclick="event.stopPropagation(); deletePersonalVideo(${video.col})" title="Delete this video">🗑️</button>
+          </div>
+        `;
+        container.appendChild(item);
+      });
+    }
+
+    // Delete a Personal Video
+    function deletePersonalVideo(colIndex) {
+      if(!confirm('Are You Sure You Want To Delete This Saved Video?')) return;
+      
+      showToast('Deleting Video...', 'ok');
+      google.script.run
+        .withSuccessHandler(res => {
+          if(res.ok) {
+            showToast('Video Deleted', 'ok');
+            loadMyVideos(); // Refresh list after delete
+          } else {
+            showToast(res.message, 'warn');
+          }
+        })
+        .deleteStudentPersonalVideo(student.uid, colIndex);
+    }
+
+    // Load video in main player
+    function loadVideoInPlayer(url, index, title) {
+      const videoId = extractVideoId(url);
+      if (!videoId) {
+        showToast('Invalid Video URL', 'warn');
+        return;
+      }
+      
+      // GLOBALS UPDATE
+      currentPlayingUrl = url;
+      currentPlayingTitle = title || 'Unknown Video';
+      
+      // Update active state in playlist
+      document.querySelectorAll('.playlist-item').forEach((item, i) => {
+        if (i === index) {
+          item.classList.add('active');
+        } else {
+          item.classList.remove('active');
+        }
+      });
+      
+      currentPlaylistIndex = index;
+      
+      // Load video using existing YouTube player
+      initYouTubePlayer(videoId);
+      
+      // Reset watch time for new video
+      if (student.watchIntervalId) {
+        clearInterval(student.watchIntervalId);
+        student.watchIntervalId = null;
+      }
+      student.realWatchSeconds = 0;
+      student.watchSeconds = 0;
+      watchTimeChip.textContent = 'Watch Time 0s';
+    }
+
+    // Helper function for YouTube embed URL
+    function getYouTubeEmbedUrl(url) {
+      if (!url) return '';
+      let videoId = '';
+      if (url.includes('youtu.be/')) {
+        videoId = url.split('youtu.be/')[1].split('?')[0];
+      } else if (url.includes('youtube.com/watch')) {
+        videoId = url.split('v=')[1].split('&')[0];
+      } else if (url.includes('youtube.com/embed/')) {
+        return url;
+      }
+      return 'https://www.youtube.com/embed/' + videoId;
+    }
+    // ============ CHAT FUNCTIONS ============
+
+    // Format time for chat display
+    function formatChatTime(timestamp) {
+      if (!timestamp) return '';
+      let d;
+      if (typeof timestamp === 'string') {
+        d = new Date(timestamp);
+      } else if (timestamp instanceof Date) {
+        d = timestamp;
+      } else {
+        return '';
+      }
+      const hh = String(d.getHours()).padStart(2, '0');
+      const mm = String(d.getMinutes()).padStart(2, '0');
+      return hh + ':' + mm;
+    }
+
+    // Start polling chat messages (every 3 seconds)
+    function startChatPolling() {
+      if (chatRefreshInterval) {
+        clearInterval(chatRefreshInterval);
+      }
+      if (!student.className) return;
+
+      function pollChat() {
+        // Fetch messages
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok) return;
+            
+            const msgs = res.messages || [];
+            if (msgs.length === 0) {
+              chatMessages.innerHTML = '<div class="muted">No Messages Yet.</div>';
+              return;
+            }
+            
+            // Show last 5 messages
+            const display = msgs.slice(-5);
+            const html = display.map(m => `
+              <div class="msg-row">
+                <div>
+                  <span class="msg-name">${m.name}</span>
+                  <span class="msg-time">${formatChatTime(m.time)}</span>
+                </div>
+                <div class="msg-text">${m.message}</div>
+              </div>
+            `).join('');
+            
+            chatMessages.innerHTML = html;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          })
+          .getChatMessagesForClass(student.className);
+        
+        // Check if chat enabled
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok) return;
+            
+            const enabled = res.enabled || false;
+            chatEnabled = enabled;
+            
+            if (enabled) {
+              chatStatusText.textContent = 'Enabled';
+              chatStatusPill.querySelector('.pill-dot').style.background = 
+                'radial-gradient(circle, #f97316 0, #ea580c 40%, #b91c1c 100%)';
+              chatStatusPill.querySelector('.pill-dot').style.boxShadow = '0 0 14px rgba(248,113,113,0.9)';
+              studentChatInput.style.display = 'block';
+            } else {
+              chatStatusText.textContent = 'Disabled';
+              chatStatusPill.querySelector('.pill-dot').style.background = 
+                'radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%)';
+              chatStatusPill.querySelector('.pill-dot').style.boxShadow = 'none';
+              studentChatInput.style.display = 'none';
+            }
+          })
+          .isChatEnabledForClass(student.className);
+      }
+      
+      // Poll immediately + every 3 seconds
+      pollChat();
+      chatRefreshInterval = setInterval(pollChat, 3000);
+    }
+
+    // Stop chat polling
+    function stopChatPolling() {
+      if (chatRefreshInterval) {
+        clearInterval(chatRefreshInterval);
+        chatRefreshInterval = null;
+      }
+    }
+    // ========================================
+    // TEACHER-SIDE CHAT POLLING
+    // ========================================
+    function startTeacherChatPolling() {
+      if (chatRefreshInterval) clearInterval(chatRefreshInterval);
+      
+      if (!teacher.currentClass) return;
+      
+      function pollChat() {
+        // Fetch messages
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok) return;
+            
+            const msgs = res.messages;
+            if (msgs.length === 0) {
+              chatMessages.innerHTML = '<div class="muted">No Messages Yet.</div>';
+              return;
+            }
+            
+            // Show last 5 messages
+            const display = msgs.slice(-5);
+            const html = display.map(m => `
+              <div class="msg-row">
+                <div>
+                  <span class="msg-name">${m.name}</span>
+                  <span class="msg-time">${formatChatTime(m.time)}</span>
+                </div>
+                <div class="msg-text">${m.message}</div>
+              </div>
+            `).join('');
+            
+            chatMessages.innerHTML = html;
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+          })
+          .getChatMessagesForClass(teacher.currentClass);
+      }
+      
+      // Poll immediately, then every 3 seconds
+      pollChat();
+      chatRefreshInterval = setInterval(pollChat, 3000);
+    }
+
+    function stopTeacherChatPolling() {
+      if (chatRefreshInterval) {
+        clearInterval(chatRefreshInterval);
+        chatRefreshInterval = null;
+      }
+    }
+
+    // STUDENT MCQ POPUP
+    const mcqPopup = document.getElementById('mcqPopup');
+    const mcqTimerText = document.getElementById('mcqTimerText');
+    const mcqFooterStatus = document.getElementById('mcqFooterStatus');
+    const mcqOptions = mcqPopup.querySelectorAll('.mcq-option');
+    const mcqDragHandle = document.getElementById('mcqDragHandle');
+
+    function showMcqPopup(questionObj) {
+      mcqPopup.style.display = 'block';
+      student.mcqActive = true;
+      student.mcqStartTime = Date.now();
+      student.mcqAnswered = false;
+      document.getElementById('mcqQuestionText').textContent = questionObj.question || 'Question';
+      const keys = ['A','B','C','D'];
+      mcqOptions.forEach(btn => {
+        const key = btn.dataset.option;
+        btn.classList.remove('selected', 'disabled');
+        const textSpan = btn.querySelector('span:nth-child(2)');
+        textSpan.textContent = questionObj.options && questionObj.options[key] ? questionObj.options[key] : ('Option ' + key);
+      });
+      mcqFooterStatus.textContent = 'Tap Once To Answer. Single Click Only.';
+      mcqRemaining = questionObj.durationSec || 30;
+      mcqTimerText.textContent = mcqRemaining;
+
+      if (mcqTimerInterval) {
+        clearInterval(mcqTimerInterval);
+      }
+      mcqTimerInterval = setInterval(() => {
+        mcqRemaining--;
+        if (mcqRemaining <= 0) {
+          clearInterval(mcqTimerInterval);
+          mcqTimerInterval = null;
+          hideMcqPopup('time up');
+        } else {
+          mcqTimerText.textContent = mcqRemaining;
+        }
+      }, 1000);
+    }
+
+    function hideMcqPopup(reason) {
+      student.mcqActive = false;
+      student.currentMcqId = null; // we clear student's current session id
+      mcqPopup.style.display = 'none';
+      if (mcqTimerInterval) {
+        clearInterval(mcqTimerInterval);
+        mcqTimerInterval = null;
+      }
+      console.log('MCQ Closed, reason:', reason);
+      // polling continues automatically
+    }
+
+    // MCQ option click handler में improvement (line ~890 के आस-पास)
+    mcqOptions.forEach(btn => {
+      btn.addEventListener('click', () => {
+        if (!student.mcqActive || student.mcqAnswered) return;
+        
+        const opt = btn.dataset.option;
+        student.mcqAnswered = true;
+        
+        const elapsedMs = Date.now() - student.mcqStartTime;
+        const seconds = Math.round(elapsedMs / 1000);
+        
+        mcqOptions.forEach(o => o.classList.add('disabled'));
+        btn.classList.add('selected');
+        mcqFooterStatus.textContent = 'Submitting Your Answer…';
+        
+        if (!student.uid) {
+          mcqFooterStatus.textContent = 'UID Missing, Cannot Save.';
+          return;
+        }
+        
+        google.script.run
+          .withFailureHandler(function(err) {
+            console.log(err);
+            mcqFooterStatus.textContent = 'Error Saving Response.';
+          })
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok) {
+              mcqFooterStatus.textContent = 'Could Not Save Response.';
+              return;
+            }
+            mcqFooterStatus.textContent = 'Response Saved (' + seconds + 's).';
+            
+            // 🔥 UPDATE STUDENT STATS (Column D)
+            if (student.uid) {
+              google.script.run
+                .withSuccessHandler(function(countRes) {
+                  if (countRes && countRes.ok) {
+                    setText('studentTodayStat', countRes.todayCount || 0);
+                    setText('studentTotalStat', countRes.totalCount || 0);
+                  }
+                })
+                .withFailureHandler(function(err) {
+                  console.warn('Stats update failed:', err);
+                })
+                .incrementAnswerCount(student.uid);
+            }
+            
+            setTimeout(() => {
+              hideMcqPopup('Answered');
+            }, 1000);
+          })
+          .saveStudentAnswer(student.uid, opt, seconds);
+      });
+    });
+    // Draggable popup
+    function enableDrag() {
+      let offsetX = 0, offsetY = 0, startX = 0, startY = 0, dragging = false;
+
+      function clamp(value, min, max) { return Math.max(min, Math.min(max, value)); }
+
+      function onDown(e) {
+        dragging = true;
+        mcqPopup.classList.add('dragging');
+        const rect = mcqPopup.getBoundingClientRect();
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+        offsetX = startX - rect.left;
+        offsetY = startY - rect.top;
+        e.preventDefault();
+      }
+
+      function onMove(e) {
+        if (!dragging) return;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const newLeft = clientX - offsetX;
+        const newTop = clientY - offsetY;
+
+        // viewport constraints
+        const vpW = Math.max(document.documentElement.clientWidth, window.innerWidth || 0);
+        const vpH = Math.max(document.documentElement.clientHeight, window.innerHeight || 0);
+        const rect = mcqPopup.getBoundingClientRect();
+        const w = rect.width || 320;
+        const h = rect.height || 160;
+
+        const minLeft = 8;
+        const maxLeft = vpW - w - 8;
+        const minTop = 8;
+        const maxTop = vpH - h - 8;
+
+        mcqPopup.style.left = clamp(newLeft, minLeft, maxLeft) + 'px';
+        mcqPopup.style.top = clamp(newTop, minTop, maxTop) + 'px';
+        mcqPopup.style.right = 'auto';
+      }
+
+      function onUp() {
+        dragging = false;
+        mcqPopup.classList.remove('dragging');
+      }
+
+      mcqDragHandle.removeEventListener('mousedown', onDown);
+      mcqDragHandle.removeEventListener('touchstart', onDown);
+      window.removeEventListener('mousemove', onMove);
+      window.removeEventListener('touchmove', onMove);
+      window.removeEventListener('mouseup', onUp);
+      window.removeEventListener('touchend', onUp);
+
+      mcqDragHandle.addEventListener('mousedown', onDown);
+      mcqDragHandle.addEventListener('touchstart', onDown, {passive:false});
+      window.addEventListener('mousemove', onMove);
+      window.addEventListener('touchmove', onMove, {passive:false});
+      window.addEventListener('mouseup', onUp);
+      window.addEventListener('touchend', onUp);
+    }
+    enableDrag();
+
+    // TEACHER SIDE
+    const teacherUidInput = document.getElementById('teacherUid');
+    const btnTeacherLogin = document.getElementById('btnTeacherLogin');
+    const teacherStatus = document.getElementById('teacherStatus');
+    const teacherClassSelect = document.getElementById('teacherClassSelect');
+    const teacherVideoUrl = document.getElementById('teacherVideoUrl');
+    const teacherMcqTimerInput = document.getElementById('teacherMcqTimer');
+    const teacherMcqTimerLabel = document.getElementById('teacherMcqTimerLabel');
+    const teacherClassInfo = document.getElementById('teacherClassInfo');
+    const btnSaveVideo = document.getElementById('btnSaveVideo');
+    const btnSendOptions = document.getElementById('btnSendOptions');
+    const lbStatus = document.getElementById('lbStatus');
+    const leaderboardEl = document.getElementById('leaderboard');
+    const lbSummary = document.getElementById('lbSummary');
+    const btnClearLb = document.getElementById('btnClearLb');
+    const mcqStats = document.getElementById('mcqStats');
+    const btnRefreshPanel = document.getElementById('btnRefreshPanel');
+    const answerStreamEl = document.getElementById('answerStream');
+
+    btnTeacherLogin.addEventListener('click', () => {
+      const uid = teacherUidInput.value.trim();
+      if (!uid) {
+        showToast('Please Enter Teacher UID', 'warn');
+        return;
+      }
+      teacherStatus.textContent = 'Checking Teacher UID';
+      google.script.run
+        .withFailureHandler(function(err) {
+          console.log(err);
+          teacherStatus.textContent = 'Error: ' + err.message;
+          teacher.uid = null; // Reset on error
+          updateModeUI();     // Hide UI
+        })
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            teacherStatus.textContent = (res && res.message) ? res.message : 'Login Failed';
+            teacher.uid = null; // Lock UI on failure
+            updateModeUI();     // Hide UI
+            return;
+          }
+          
+          // ✅ LOGIN SUCCESSFUL
+          teacher.uid = uid;
+          teacher.classes = res.classes || [];
+          
+          // 👉 Ye call karte hi protected UI show ho jayega
+          updateModeUI(); 
+          
+          teacherStatus.textContent = 'WELCOME, ' + (res.name || '');
+          teacherMcqTimerInput.value = res.defaultTimer || 30;
+          teacherMcqTimerLabel.textContent = teacherMcqTimerInput.value;
+          teacherClassSelect.innerHTML = '<option value="">Select Class</option>' +
+            teacher.classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+          // Load chat status if class already selected
+          if (teacher.currentClass) {
+            google.script.run
+              .withSuccessHandler(function(res) {
+                chatStatusText.textContent = res.enabled ? 'Enabled' : 'Disabled';
+                chatStatusPill.querySelector('.pill-dot').style.background = res.enabled
+                  ? 'radial-gradient(circle, #f97316 0, #ea580c 40%, #b91c1c 100%)'
+                  : 'radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%)';
+                chatStatusPill.querySelector('.pill-dot').style.boxShadow = res.enabled
+                  ? '0 0 14px rgba(248,113,113,0.9)'
+                  : 'none';
+              })
+              .isChatEnabledForClass(teacher.currentClass);
+          }
+        })
+        .teacherLogin(uid);
+    });
+
+    teacherMcqTimerInput.addEventListener('input', () => {
+      teacherMcqTimerLabel.textContent = teacherMcqTimerInput.value || '--';
+    });
+
+    teacherClassSelect.addEventListener('change', () => {
+      const cls = teacherClassSelect.value;
+      teacher.currentClass = cls || null;
+      
+      // ✅ Niche wale function se li gayi zaroori line:
+      if (classStatsCard) classStatsCard.style.display = cls ? 'block' : 'none';
+
+      if (!cls) {
+        teacherClassInfo.textContent = 'Control Video & MCQ.';
+        // ✅ Naye popup input ko update karein
+        if (typeof popupVideoUrlInput !== 'undefined') popupVideoUrlInput.value = '';
+        
+        // Stop chat polling
+        stopTeacherChatPolling();
+        
+        // clear paper select
+        const sel = document.getElementById('paperSelect');
+        if (sel) sel.innerHTML = '<option value="">- Select Paper -</option>';
+        return;
+      }
+      
+      teacherClassInfo.textContent = `Controlling Class ${cls} (YT DATA).`;
+      
+      // Start chat polling for new class
+      startTeacherChatPolling();
+      
+      // Fetch class config...
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            teacherClassInfo.textContent = `Class ${cls} Not Found In YT DATA.`;
+            if (typeof popupVideoUrlInput !== 'undefined') popupVideoUrlInput.value = '';
+            return;
+          }
+          // ✅ Naye popup input ko update karein
+          if (typeof popupVideoUrlInput !== 'undefined') popupVideoUrlInput.value = res.videoUrl || '';
+          
+          if (res.mcqTimer) {
+            teacherMcqTimerInput.value = res.mcqTimer;
+            teacherMcqTimerLabel.textContent = res.mcqTimer;
+          }
+          // Load paper ids for this class
+          loadPaperIdsForCurrentClass();
+          
+          // Check chat status
+          google.script.run
+            .withSuccessHandler(function(chatRes) {
+              chatStatusText.textContent = chatRes.enabled ? 'Enabled' : 'Disabled';
+              chatStatusPill.querySelector('.pill-dot').style.background = 
+                chatRes.enabled ? 'radial-gradient(circle, #f97316 0, #ea580c 40%, #b91c1c 100%)' : 
+                                  'radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%)';
+              chatStatusPill.querySelector('.pill-dot').style.boxShadow = 
+                chatRes.enabled ? '0 0 14px rgba(248,113,113,0.9)' : 'none';
+            })
+            .isChatEnabledForClass(cls);
+        })
+        .getClassConfig(cls);
+    });
+
+    // Modal Variables
+    const saveLinkModal = document.getElementById('saveLinkModal');
+    const popupVideoUrlInput = document.getElementById('popupVideoUrlInput');
+    const btnCancelSaveLink = document.getElementById('btnCancelSaveLink');
+    const btnConfirmSaveLink = document.getElementById('btnConfirmSaveLink');
+
+    // 1. Show Popup on "Save Link" Click
+    btnSaveVideo.addEventListener('click', () => {
+      if (!teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      saveLinkModal.style.display = 'flex';
+      popupVideoUrlInput.focus();
+    });
+
+    // 2. Hide Popup on Cancel
+    btnCancelSaveLink.addEventListener('click', () => {
+      saveLinkModal.style.display = 'none';
+    });
+
+    // 3. Confirm and Save Link
+    btnConfirmSaveLink.addEventListener('click', () => {
+      const url = popupVideoUrlInput.value.trim();
+      if (!url) {
+        showToast('Enter YouTube Link', 'warn');
+        return;
+      }
+      
+      saveLinkModal.style.display = 'none'; // Close popup
+      teacherStatus.textContent = 'Saving Video Link...';
+      
+      google.script.run
+        .withFailureHandler(function(err) {
+          console.log(err);
+          teacherStatus.textContent = 'Error: ' + err.message;
+        })
+        .withSuccessHandler(function(res) {
+          teacherStatus.textContent = (res && res.message) ? res.message : 'Video Link Saved For ' + teacher.currentClass;
+          showToast('Link updated', 'ok');
+        })
+        .setClassVideo(teacher.uid, teacher.currentClass, url);
+    });
+
+    // Close modal on outside click
+    saveLinkModal.addEventListener('click', (e) => {
+      if (e.target === saveLinkModal) saveLinkModal.style.display = 'none';
+    });
+
+    btnSendOptions.addEventListener('click', () => {
+      if (!teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      const duration = parseInt(teacherMcqTimerInput.value || '30', 10);
+      teacherMcqTimerLabel.textContent = duration;
+      lbStatus.textContent = 'Question Sent. Waiting For Responses';
+
+      const q = 'Question for class ' + teacher.currentClass;
+      const opts = {
+        A: 'Option A',
+        B: 'Option B',
+        C: 'Option C',
+        D: 'Option D'
+      };
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            lbStatus.textContent = 'Error sending MCQ';
+            return;
+          }
+          lbStatus.textContent = 'MCQ active for ' + teacher.currentClass;
+          startMcqStatsAutoRefresh(duration);
+        })
+        .startMcqForClass(teacher.uid, teacher.currentClass, duration, q, opts.A, opts.B, opts.C, opts.D);
+    });
+
+    document.querySelectorAll('button[data-correct]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const opt = btn.getAttribute('data-correct');
+        if (!teacher.currentClass) {
+          showToast('Select Class First', 'warn');
+          return;
+        }
+        lbStatus.textContent = 'Evaluating answers, correct: ' + opt;
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok) {
+              lbStatus.textContent = 'Error creating leaderboard';
+              return;
+            }
+            renderLeaderboard(res.rows || []);
+            lbStatus.textContent = 'Leaderboard ready, correct: ' + opt + '.';
+          })
+          .computeLeaderboard(teacher.currentClass, opt);
+      });
+    });
+
+    // TEACHER: Clear button handler - UPDATED VERSION
+    btnClearLb.addEventListener('click', () => {
+      if (!teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      
+      lbStatus.textContent = 'Clearing Leaderboard And Answers';
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          // 1. Leaderboard clear
+          leaderboardEl.innerHTML = '<div class="muted">Leaderboard Cleared.</div>';
+          lbSummary.textContent = '--';
+          lbStatus.textContent = 'No Leaderboard Yet.';
+          
+          // 2. Answer stream clear
+          if (answerStreamEl) {
+            answerStreamEl.innerHTML = '<div class="muted">No Answers Yet.</div>';
+          }
+          
+          // 3. MCQ Distribution clear (← YEH ADD KARNA THA!)
+          if (mcqStats) {
+            mcqStats.innerHTML = '<div class="muted">No Active Question.</div>';
+          }
+          
+          // 4. Stop auto-refresh interval if running
+          if (mcqStatsInterval) {
+            clearInterval(mcqStatsInterval);
+            mcqStatsInterval = null;
+          }
+          
+          showToast('All Data Cleared Successfully', 'ok');
+        })
+        .withFailureHandler(function(err) {
+          console.log(err);
+          lbStatus.textContent = 'Error clearing answers: ' + err.message;
+        })
+        .clearClassAnswers(teacher.currentClass);
+    });
+
+    function renderLeaderboard(rows) {
+      if (!rows || !rows.length) {
+        leaderboardEl.innerHTML = '<div class="muted">No Correct Answers.</div>';
+        lbSummary.textContent = '0 correct';
+        return;
+      }
+      leaderboardEl.innerHTML = rows.map(r => `
+        <div class="lb-row">
+          <div class="lb-rank">#${r.rank}</div>
+          <div class="lb-name">${r.name}</div>
+          <div class="lb-time">${r.time.toFixed(1)}s</div>
+        </div>
+      `).join('');
+      lbSummary.textContent = rows.length + ' correct';
+    }
+
+    // ✅ SIMPLE VERSION: Just modify the refresh button
+    btnRefreshPanel.addEventListener('click', () => {
+      if (currentMode === 'teacher') {
+        // Teacher refresh (existing code - keep as is)
+        if (!teacher.currentClass) {
+          mcqStats.innerHTML = '<div class="muted">Select Class First.</div>';
+          return;
+        }
+        
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok || !res.total) {
+              mcqStats.innerHTML = '<div class="muted">No Active Responses.</div>';
+              return;
+            }
+            const s = res.stats || {};
+            mcqStats.innerHTML = `
+              <div style="font-size:12px;">
+                <div>A: ${s.A || 0}%</div>
+                <div>B: ${s.B || 0}%</div>
+                <div>C: ${s.C || 0}%</div>
+                <div>D: ${s.D || 0}%</div>
+              </div>
+            `;
+          })
+          .getOptionStats(teacher.currentClass);
+        
+      } else if (currentMode === 'student' && student.uid) {
+        // ✅ STUDENT: Just reload the statistics
+        loadStudentStatistics();
+        showToast('Student Stats Refreshed', 'ok');
+      }
+    });
+
+    // Init date chips + default UI
+    setText('studentDateChip', todayString());
+    setText('teacherDateChip', todayString());
+    teacherMcqTimerLabel.textContent = document.getElementById('teacherMcqTimer').value;
+    updateModeUI();
+
+    function startMcqStatsAutoRefresh(durationSec) {
+      if (!teacher.currentClass) return;
+
+      // Purana interval clear
+      if (mcqStatsInterval) {
+        clearInterval(mcqStatsInterval);
+        mcqStatsInterval = null;
+      }
+
+      const endTime = Date.now() + (durationSec * 1000);
+
+      function refreshOnce() {
+        // Agar time khatam, auto-refresh stop
+        if (Date.now() > endTime) {
+          clearInterval(mcqStatsInterval);
+          mcqStatsInterval = null;
+          return;
+        }
+
+        // MCQ distribution
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok || !res.total) {
+              mcqStats.innerHTML = '<div class="muted">No Active Responses.</div>';
+              return;
+            }
+            const s = res.stats || {};
+            mcqStats.innerHTML = `
+              <div style="font-size:12px;">
+                <div>A: ${s.A || 0}%</div>
+                <div>B: ${s.B || 0}%</div>
+                <div>C: ${s.C || 0}%</div>
+                <div>D: ${s.D || 0}%</div>
+              </div>
+            `;
+          })
+          .getOptionStats(teacher.currentClass);
+
+        // Answer stream (last 5 answers)
+        refreshAnswerStream();
+      }
+
+      // Turant ek baar
+      refreshOnce();
+      // Phir har second
+      mcqStatsInterval = setInterval(refreshOnce, 1000);
+    }
+
+    function stopMcqStatsAutoRefresh() {
+      if (mcqStatsInterval) {
+        clearInterval(mcqStatsInterval);
+        mcqStatsInterval = null;
+      }
+    }
+
+    function refreshAnswerStream() {
+      if (!teacher.currentClass || !answerStreamEl) return;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok || !res.rows || !res.rows.length) {
+            answerStreamEl.innerHTML = '<div class="muted">No Answers Yet.</div>';
+            return;
+          }
+          const html = res.rows.map(r => `
+            <div style="padding:3px 0; border-bottom:1px solid rgba(31,41,55,0.6);">
+              <span style="color:#e5e7eb;">${r.name}</span>
+              <span class="muted"> Answered </span>
+              <span style="color:#f97316; font-weight:500;">${r.answer}</span>
+            </div>
+          `).join('');
+          answerStreamEl.innerHTML = html;
+        })
+        .getLatestAnswers(teacher.currentClass, 5);
+    }
+
+    // Load Paper IDs for currently selected class into dropdown
+    function loadPaperIdsForCurrentClass() {
+      const sel = document.getElementById('paperSelect');
+      if (!teacher.currentClass) {
+        sel.innerHTML = '<option value="">- Select Paper -</option>';
+        return;
+      }
+      sel.innerHTML = '<option>Loading...</option>';
+      google.script.run
+        .withFailureHandler(err => {
+          console.log(err);
+          sel.innerHTML = '<option value="">Error Loading</option>';
+        })
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            sel.innerHTML = '<option value="">No Papers</option>';
+            return;
+          }
+          const papers = res.papers || [];
+          let html = '<option value="">- Select Paper -</option>';
+          papers.forEach(p => {
+            html += `<option value="${p}">${p}</option>`;
+          });
+          sel.innerHTML = html;
+        })
+        .listPaperIdsForClass(teacher.currentClass);
+    }
+
+    // When teacher clicks "Load Questions"
+    document.getElementById('btnLoadPaper').addEventListener('click', () => {
+      const sel = document.getElementById('paperSelect');
+      const pid = sel.value;
+      const container = document.getElementById('paperQuestions');
+      if (!teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      if (!pid) {
+        showToast('Select A Paper ID', 'warn');
+        return;
+      }
+      container.innerHTML = '<div class="muted">Loading Questions...</div>';
+      google.script.run
+        .withFailureHandler(err => {
+          console.log(err);
+          container.innerHTML = '<div class="muted">Error Loading Questions.</div>';
+        })
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            container.innerHTML = '<div class="muted">No Questions Found.</div>';
+            return;
+          }
+          const qs = res.questions || [];
+          if (!qs.length) {
+            container.innerHTML = '<div class="muted">No Questions For This Paper.</div>';
+            return;
+          }
+          // render questions list with Send button
+          const html = qs.map(q => {
+            const qText = q.question || '';
+            const opts = q.options || {};
+            // round green send button (arrow) using unicode
+            return `
+              <div style="padding:8px; border-bottom:1px solid rgba(31,41,55,0.6); display:flex; gap:8px; align-items:flex-start;">
+                <div style="flex:1;">
+                  <div style="font-weight:600; color:var(--text);">Q${q.sr || ''}: ${qText}</div>
+                  <div style="margin-top:6px; font-size:13px;">
+                    <div>A. ${opts.A || ''}</div>
+                    <div>B. ${opts.B || ''}</div>
+                    <div>C. ${opts.C || ''}</div>
+                    <div>D. ${opts.D || ''}</div>
+                    <div style="margin-top:6px; font-size:12px; color:var(--text-soft)">Correct: ${q.correct || '-'}</div>
+                  </div>
+                </div>
+                <div style="flex:0 0 48px; display:flex; align-items:center;">
+                  <button class="primary" style="border-radius:999px; padding:10px 12px; width:48px; height:48px;" data-sr="${q.sr || ''}" data-q='${JSON.stringify(q).replace(/'/g,"&#39;")}' title="Send to class">
+                    ▶
+                  </button>
+                </div>
+              </div>
+            `;
+          }).join('');
+          container.innerHTML = html;
+
+          // attach click handlers to send buttons
+          container.querySelectorAll('button.primary').forEach(btn => {
+            btn.addEventListener('click', () => {
+              const qRaw = btn.getAttribute('data-q') || '{}';
+              const q = JSON.parse(qRaw.replace(/&#39;/g,"'"));
+              sendQuestionToClass(q);
+            });
+          });
+        })
+        .getQuestionsForPaper(teacher.currentClass, pid);
+    });
+
+    // Send a selected question to the class (uses existing startMcqForClass)
+    function sendQuestionToClass(qObj) {
+      if (!teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      // create question text and options (client agrees with server API)
+      const qText = qObj.question || ('Q ' + (qObj.sr || ''));
+      const a = qObj.options && qObj.options.A || 'Option A';
+      const b = qObj.options && qObj.options.B || 'Option B';
+      const c = qObj.options && qObj.options.C || 'Option C';
+      const d = qObj.options && qObj.options.D || 'Option D';
+      const duration = parseInt(teacherMcqTimerInput.value || '30', 10) || 30;
+
+      // call server startMcqForClass(teacher.uid, teacher.currentClass, duration, q, A, B, C, D)
+      google.script.run
+        .withFailureHandler(err => {
+          console.log(err);
+          showToast('Error starting MCQ', 'err');
+        })
+        .withSuccessHandler(res => {
+          if (!res || !res.ok) {
+            showToast('Could Not Send Question', 'err');
+            return;
+          }
+          showToast('Question Sent To Class', 'ok');
+          // start teacher-side stats refresh
+          startMcqStatsAutoRefresh(duration);
+        })
+        .startMcqForClass(teacher.uid, teacher.currentClass, duration, qText, a, b, c, d);
+    }
+    // 🔥 UTILITY: Safe setText (existing function ko improve)
+    function setText(id, text) {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    }
+    // STUDENT: Send message button
+    btnStudentSendMsg.addEventListener('click', () => {
+      const msg = studentMessageInput.value.trim();
+      if (!msg) return;
+      
+      if (!student.uid || !student.className) {
+        showToast('Not logged in', 'warn');
+        return;
+      }
+      
+      const name = student.name || ('Student ' + student.uid);
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            showToast('Chat Disabled or error', 'warn');
+            return;
+          }
+          studentMessageInput.value = '';
+          showToast('Message Sent', 'ok');
+          
+          // Refresh immediately
+          setTimeout(() => {
+            google.script.run
+              .withSuccessHandler(function(chatRes) {
+                if (!chatRes || !chatRes.ok) return;
+                const msgs = chatRes.messages || [];
+                if (msgs.length > 0) {
+                  const display = msgs.slice(-5);
+                  const html = display.map(m => `
+                    <div class="msg-row">
+                      <div>
+                        <span class="msg-name">${m.name}</span>
+                        <span class="msg-time">${formatChatTime(m.time)}</span>
+                      </div>
+                      <div class="msg-text">${m.message}</div>
+                    </div>
+                  `).join('');
+                  chatMessages.innerHTML = html;
+                  chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+              })
+              .getChatMessagesForClass(student.className);
+          }, 500);
+        })
+        .withFailureHandler(function(err) {
+          console.log(err);
+          showToast('Error sending', 'err');
+        })
+        .sendStudentMessage(student.uid, name, student.className, msg);
+    });
+    // TEACHER: Send message + enable chat button
+    btnTeacherSendMsg.addEventListener('click', () => {
+      const msg = teacherMessageInput.value.trim();
+      if (!msg) return;
+      
+      if (!teacher.uid || !teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            showToast('Failed To Send', 'warn');
+            return;
+          }
+          teacherMessageInput.value = '';
+          showToast('Message Sent & Chat Enabled', 'ok');
+          
+          // Update status immediately
+          chatStatusText.textContent = 'Enabled';
+          chatStatusPill.querySelector('.pill-dot').style.background = 
+            'radial-gradient(circle, #f97316 0, #ea580c 40%, #b91c1c 100%)';
+          chatStatusPill.querySelector('.pill-dot').style.boxShadow = '0 0 14px rgba(248,113,113,0.9)';
+          
+          // Refresh messages
+          setTimeout(() => {
+            google.script.run
+              .withSuccessHandler(function(chatRes) {
+                if (!chatRes || !chatRes.ok) return;
+                const msgs = chatRes.messages || [];
+                if (msgs.length > 0) {
+                  const display = msgs.slice(-5);
+                  const html = display.map(m => `
+                    <div class="msg-row">
+                      <div>
+                        <span class="msg-name">${m.name}</span>
+                        <span class="msg-time">${formatChatTime(m.time)}</span>
+                      </div>
+                      <div class="msg-text">${m.message}</div>
+                    </div>
+                  `).join('');
+                  chatMessages.innerHTML = html;
+                  chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+              })
+              .getChatMessagesForClass(teacher.currentClass);
+          }, 500);
+        })
+        .withFailureHandler(function(err) {
+          console.log(err);
+          showToast('Error sending', 'err');
+        })
+        .sendTeacherMessage(teacher.uid, teacher.currentClass, msg);
+    });
+
+    // TEACHER: Disable chat button
+    btnDisableChat.addEventListener('click', () => {
+      if (!teacher.currentClass) {
+        showToast('Select Class First', 'warn');
+        return;
+      }
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) {
+            showToast('Error Disabling Chat', 'warn');
+            return;
+          }
+          
+          // Clear UI
+          chatMessages.innerHTML = '<div class="muted">No messages yet.</div>';
+          chatStatusText.textContent = 'Disabled';
+          chatStatusPill.querySelector('.pill-dot').style.background = 
+            'radial-gradient(circle, #4ade80 0, #22c55e 40%, #15803d 100%)';
+          chatStatusPill.querySelector('.pill-dot').style.boxShadow = 'none';
+          stopTeacherChatPolling();
+          showToast('Chat Disabled & Messages Cleared', 'ok');
+        })
+        .withFailureHandler(function(err) {
+          console.log(err);
+          showToast('Error Disabling Chat', 'err');
+        })
+        .disableChatForClass(teacher.currentClass);
+    });
+    // ============ STUDENT STATISTICS FUNCTIONS ============
+    function loadStudentStatistics() {
+      if (!student.uid) return;
+      
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (!res || !res.ok) return;
+          
+          // Update all 5 stats
+          setText('studentTodayStat', res.todayAnswer || 0);
+          setText('studentTotalStat', res.totalAnswer || 0);
+          setText('studentPresentStat', res.totalPresent || 0);
+          setText('studentTotalWatchStat', (res.totalWatch || 0) + 'm');
+          setText('studentTodayWatchStat', (res.todayWatch || 0) + 'm');
+        })
+        .withFailureHandler(function(err) {
+          console.log('Stats load error:', err);
+        })
+        .getStudentStatistics(student.uid);
+    }
+
+    // ============ TEACHER CLASS STATISTICS ============
+    const classStatsCard = document.getElementById('classStatsCard');
+    const classStatsModal = document.getElementById('classStatsModal');
+    const btnViewClassStats = document.getElementById('btnViewClassStats');
+    const btnCloseClassStats = document.getElementById('btnCloseClassStats');
+    const classStatsTableBody = document.getElementById('classStatsTableBody');
+
+    // Show modal
+    if (btnViewClassStats) {
+      btnViewClassStats.addEventListener('click', function() {
+        if (!teacher.currentClass) {
+          showToast('Select Class First', 'warn');
+          return;
+        }
+        
+        classStatsModal.style.display = 'flex';
+        classStatsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-soft)">Loading...</td></tr>';
+        
+        google.script.run
+          .withSuccessHandler(function(res) {
+            if (!res || !res.ok) {
+              classStatsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444">Error loading data</td></tr>';
+              return;
+            }
+            
+            // Update summary
+            setText('summaryStudents', res.summary.totalStudents);
+            setText('summaryAvgPresent', res.summary.avgPresent);
+            setText('summaryAvgTotal', res.summary.avgTotalWatch + 'm');
+            setText('summaryAvgToday', res.summary.avgTodayWatch + 'm');
+            
+            // Render table
+            if (!res.students || !res.students.length) {
+              classStatsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-soft)">No Students In This Class</td></tr>';
+              return;
+            }
+            
+            const html = res.students.map(s => `
+              <!-- Main Row -->
+              <tr style="border-bottom:1px solid rgba(31,41,55,0.6)">
+                <td style="padding:8px 4px; color:var(--text)">${s.name}</td>
+                
+                <td style="text-align:center; padding:8px 4px; color:#c084fc; font-weight:500">
+                  ${s.totalPresent} 
+                  <span class="hist-toggle" style="cursor:pointer; font-size:10px; color:#fff; background:rgba(192,132,252,0.2); padding:2px 5px; border-radius:4px; margin-left:4px;" onclick="toggleStudentHistory('${s.uid}', 'PRESENT', this)" title="View Present Days">▼</span>
+                </td>
+                
+                <td style="text-align:center; padding:8px 4px; color:#fb923c; font-weight:500">
+                  ${s.totalWatch}m 
+                  <span class="hist-toggle" style="cursor:pointer; font-size:10px; color:#fff; background:rgba(251,146,60,0.2); padding:2px 5px; border-radius:4px; margin-left:4px;" onclick="toggleStudentHistory('${s.uid}', 'TOTAL_WATCH', this)" title="View Full Month Watch History">▼</span>
+                </td>
+                
+                <td style="text-align:center; padding:8px 4px; color:#f472b6; font-weight:500">
+                  ${s.todayWatch}m 
+                  <span class="hist-toggle" style="cursor:pointer; font-size:10px; color:#fff; background:rgba(244,114,182,0.2); padding:2px 5px; border-radius:4px; margin-left:4px;" onclick="toggleStudentHistory('${s.uid}', 'TODAY_WATCH', this)" title="View Today's Watch History">▼</span>
+                </td>
+              </tr>
+              <!-- Expanded Detail Row (Hidden Default) -->
+              <tr id="hist-row-${s.uid}" style="display:none; background:rgba(15,23,42,0.6);">
+                <td colspan="4" style="padding:0; border-bottom:1px solid rgba(31,41,55,0.8);">
+                  <div id="hist-div-${s.uid}" class="history-expanded-div scrollbar-thin" data-current-type="">
+                    <!-- Data will load here -->
+                  </div>
+                </td>
+              </tr>
+            `).join('');
+            
+            classStatsTableBody.innerHTML = html;
+          })
+          .withFailureHandler(function(err) {
+            console.log('Class stats error:', err);
+            classStatsTableBody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:20px; color:#ef4444">Error: ' + err.message + '</td></tr>';
+          })
+          .getClassStatistics(teacher.currentClass);
+      });
+    }
+
+    // Close modal
+    if (btnCloseClassStats) {
+      btnCloseClassStats.addEventListener('click', function() {
+        classStatsModal.style.display = 'none';
+      });
+    }
+
+    // Close on outside click
+    if (classStatsModal) {
+      classStatsModal.addEventListener('click', function(e) {
+        if (e.target === classStatsModal) {
+          classStatsModal.style.display = 'none';
+        }
+      });
+    }
+// === QUIZ DATA LOGIC ===
+
+    const btnQuizData = document.getElementById('btnQuizData');
+    const quizDataModal = document.getElementById('quizDataModal');
+    const btnCloseQuizData = document.getElementById('btnCloseQuizData');
+    const quizDataTableBody = document.getElementById('quizDataTableBody');
+
+    // Helper: Parse specific date format "10/02/2026, 03:12:19 PM"
+    function parseReportDate(textBlob) {
+      if (!textBlob) return null;
+      // Regex to find "Date:- DD/MM/YYYY, HH:MM:SS AM/PM"
+      const match = textBlob.match(/Date:-\s*(\d{2})\/(\d{2})\/(\d{4}),\s*(\d{2}):(\d{2}):(\d{2})\s*([AP]M)/);
+      
+      if (match) {
+        let [_, day, month, year, hh, mm, ss, amp] = match;
+        hh = parseInt(hh, 10);
+        if (amp === 'PM' && hh < 12) hh += 12;
+        if (amp === 'AM' && hh === 12) hh = 0;
+        
+        // Month is 0-indexed in JS Date (0 = Jan, 1 = Feb)
+        return new Date(year, parseInt(month) - 1, day, hh, parseInt(mm), parseInt(ss));
+      }
+      return null;
+    }
+
+    // Helper: Format text blob for HTML (newlines to <br>)
+    function formatReportText(text) {
+      if (!text) return '<span class="muted">--</span>';
+      return text.replace(/\n/g, '<br>');
+    }
+
+    btnQuizData.addEventListener('click', () => {
+      const uid = document.getElementById('teacherUid').value.trim();
+      if (!uid) {
+        showToast('Please Enter Teacher UID First', 'warn');
+        return;
+      }
+
+      quizDataModal.style.display = 'flex';
+      quizDataTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">Loading Data From All Mapped Classes...<br>Please Wait.</td></tr>';
+
+      google.script.run
+        .withSuccessHandler(res => {
+          if (!res.ok) {
+            quizDataTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:20px; color:#ef4444;">${res.message}</td></tr>`;
+            return;
+          }
+
+          if (res.reports.length === 0) {
+            quizDataTableBody.innerHTML = '<tr><td colspan="5" style="text-align:center; padding:30px; color:#94a3b8;">No Reports Found In Mapped Sheets.</td></tr>';
+            return;
+          }
+
+          const now = new Date();
+          const oneDayMs = 24 * 60 * 60 * 1000;
+          
+          const html = res.reports.map(row => {
+            // Logic for Check/Cross
+            const dateI = parseReportDate(row.latest);
+            const dateJ = parseReportDate(row.oldest);
+            
+            let isActive = false;
+            
+            // Check if Date I is within 24 hours
+            if (dateI && (now - dateI) < oneDayMs) isActive = true;
+            // OR Check if Date J is within 24 hours
+            else if (dateJ && (now - dateJ) < oneDayMs) isActive = true;
+
+            const icon = isActive ? '✅' : '❌';
+            const rowColor = isActive ? 'rgba(34,197,94,0.05)' : 'transparent';
+            const iconColor = isActive ? '#4ade80' : '#ef4444';
+
+            return `
+              <tr style="border-bottom:1px solid rgba(55,65,81,0.5); background:${rowColor};">
+                <td style="padding:10px; vertical-align:top; color:#e2e8f0;">${row.uid}</td>
+                <td style="padding:10px; vertical-align:top;">
+                  <div style="font-weight:600; color:#f1f5f9; display:flex; align-items:center; gap:6px;">
+                      <span>${row.name}</span>
+                      <span style="color:${iconColor}; font-size:16px;">${icon}</span>
+                  </div>
+                </td>
+                <td style="padding:10px; vertical-align:top; color:#94a3b8;">${row.className}</td>
+                <td style="padding:10px; vertical-align:top; font-size:11px; line-height:1; color:#cbd5e1;">
+                  ${formatReportText(row.latest)}
+                </td>
+                <td style="padding:10px; vertical-align:top; font-size:11px; line-height:1; color:#94a3b8;">
+                  ${formatReportText(row.oldest)}
+                </td>
+              </tr>
+            `;
+          }).join('');
+
+          quizDataTableBody.innerHTML = html;
+
+        })
+        .withFailureHandler(err => {
+          quizDataTableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#ef4444;">Error: ${err.message}</td></tr>`;
+        })
+        .getTeacherQuizData(uid);
+    });
+
+    // Close Modal Logic
+    btnCloseQuizData.addEventListener('click', () => {
+      quizDataModal.style.display = 'none';
+    });
+
+    // Close on outside click
+    quizDataModal.addEventListener('click', (e) => {
+      if (e.target === quizDataModal) quizDataModal.style.display = 'none';
+    });
+    // ============ SUBJECT & CHAPTERS LOGIC ============
+    let currentSubjectData = {};
+
+    function loadSubjectChapters(className) {
+      const subjSelect = document.getElementById('subjectSelect');
+      const chapSelect = document.getElementById('chapterSelect');
+      if (!subjSelect || !chapSelect) return;
+      
+      subjSelect.innerHTML = '<option value="">Loading...</option>';
+      chapSelect.innerHTML = '<option value="">Select Chapter</option>';
+      chapSelect.disabled = true;
+
+      google.script.run
+        .withSuccessHandler(function(res) {
+          if (res && res.ok && res.data) {
+            currentSubjectData = res.data;
+            const subjects = Object.keys(currentSubjectData);
+            if (subjects.length > 0) {
+              subjSelect.innerHTML = '<option value="">Select Subject</option>' +
+                subjects.map(s => `<option value="${s}">${s}</option>`).join('');
+            } else {
+              subjSelect.innerHTML = '<option value="">No Subjects Found</option>';
+            }
+          } else {
+            subjSelect.innerHTML = '<option value="">No Data</option>';
+          }
+        })
+        .withFailureHandler(function(err) {
+          subjSelect.innerHTML = '<option value="">Error</option>';
+          console.error('Chapters load error:', err);
+        })
+        .getSubjectChapters(className);
+    }
+
+    // Dropdown Event Listeners
+    const subjectSelectEl = document.getElementById('subjectSelect');
+    const chapterSelectEl = document.getElementById('chapterSelect');
+
+    if (subjectSelectEl) {
+      subjectSelectEl.addEventListener('change', function() {
+        const subj = this.value;
+        if (!subj || !currentSubjectData[subj]) {
+          chapterSelectEl.innerHTML = '<option value="">Select Chapter</option>';
+          chapterSelectEl.disabled = true;
+          return;
+        }
+
+        const chapters = currentSubjectData[subj];
+        chapterSelectEl.innerHTML = '<option value="">Select Chapter</option>' +
+          chapters.map((ch, idx) => `<option value="${idx}">${ch.title}</option>`).join('');
+        chapterSelectEl.disabled = false;
+      });
+    }
+
+    if (chapterSelectEl) {
+      chapterSelectEl.addEventListener('change', function() {
+        if(student.isBlocked) { 
+            showToast('You Cannot Play Other Chapters While Blocked.', 'err');
+            return;
+        }
+        const idx = this.value;
+        const subj = subjectSelectEl.value;
+        if (idx === "" || !subj) return;
+
+        const chapter = currentSubjectData[subj][idx];
+        if (chapter && chapter.url) {
+          currentPlayingUrl = chapter.url;
+          currentPlayingTitle = chapter.title;
+          const videoId = extractVideoId(chapter.url);
+          if (videoId) {
+            // Purane YT player me naya video daal dein
+            initYouTubePlayer(videoId);
+
+            if (student.watchIntervalId) {
+              clearInterval(student.watchIntervalId);
+              student.watchIntervalId = null;
+            }
+            student.realWatchSeconds = 0;
+            student.watchSeconds = 0;
+            const watchChip = document.getElementById('watchTimeChip');
+            if(watchChip) watchChip.textContent = 'Watch Time 0s';
+            const fsWatchVal = document.getElementById('fullscreenWatchValue');
+            if(fsWatchVal) fsWatchVal.textContent = '0s';
+            
+            // Niche Playlist Card me agar koi video active hai toh use hata dein
+            document.querySelectorAll('.playlist-item').forEach(item => item.classList.remove('active'));
+            
+            showToast('Playing: ' + chapter.title, 'ok');
+          } else {
+            showToast('Invalid YouTube Link In Playlist', 'warn');
+          }
+        }
+      });
+    }
+    // ==========================================
+    // MANAGEMENT MODALS LOGIC
+    // ==========================================
+    
+    let currentManageContext = ''; 
+    const manageModal = document.getElementById('managementModal');
+    const manageTitle = document.getElementById('manageModalTitle');
+    const thead = document.getElementById('manageTableHeader');
+    const tbody = document.getElementById('manageTableBody');
+    
+    document.getElementById('btnCloseManageModal').addEventListener('click', () => {
+      manageModal.style.display = 'none';
+    });
+    
+    // UI Helpers
+    function buildInput(val, field) {
+      return `<input type="text" data-field="${field}" value="${val}" style="width:100%; padding:6px; font-size:12px; border-radius:6px; border:1px solid #475569; background:#1e293b; color:#fff;">`;
+    }
+    
+    function showLoadingTable(colspan) {
+      tbody.innerHTML = `<tr><td colspan="${colspan}" style="text-align:center; padding:30px; color:#94a3b8;">Loading data... Please wait.</td></tr>`;
+    }
+
+    // --- 1. STUDENTS MANAGEMENT ---
+    document.getElementById('btnManageStudents').addEventListener('click', () => {
+      const tUid = document.getElementById('teacherUid').value.trim();
+      if(!tUid) { showToast('Enter Teacher UID To Show List', 'warn'); return; }
+      
+      currentManageContext = 'STUDENTS';
+      manageTitle.textContent = '👥 Manage Live Class Students';
+      thead.innerHTML = '<tr><th style="padding:10px; text-align:left;">UID</th><th style="padding:10px; text-align:left;">Student Name</th><th style="padding:10px; text-align:left;">Class</th><th style="padding:10px; text-align:center;">Action</th></tr>';
+      manageModal.style.display = 'flex';
+      showLoadingTable(4);
+      
+      google.script.run.withSuccessHandler(res => {
+        if(!res.ok) { tbody.innerHTML = `<tr><td colspan="4">${res.message}</td></tr>`; return; }
+        renderStudentTable(res.data);
+      }).getManageStudents();
+    });
+
+    function renderStudentTable(data) {
+      let html = '';
+      data.forEach(r => {
+        html += `<tr data-row="${r.row}" class="draggable-row" style="border-bottom:1px solid #334155;">
+          <td style="padding:8px;" class="cell-uid">${r.uid}</td>
+          <td style="padding:8px;" class="cell-name">${r.name}</td>
+          <td style="padding:8px;" class="cell-cls">${r.cls}</td>
+          <td style="padding:8px; text-align:center; width:140px;">
+             <span style="cursor:grab; margin-right:8px; font-size:16px; color:#9ca3af;" title="Drag to reorder">☰</span>
+             <button class="secondary edit-btn" onclick="editStudentRow(this)">✏️</button>
+             <button class="danger delete-btn" style="padding:5px 5px; border-radius:50px;" onclick="clearStudentRow(this, ${r.row})">🗑️</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+      enableDragAndDrop();
+    }
+
+    function editStudentRow(btn) {
+      const tr = btn.closest('tr');
+      const uid = tr.querySelector('.cell-uid').textContent;
+      const name = tr.querySelector('.cell-name').textContent;
+      const cls = tr.querySelector('.cell-cls').textContent;
+      
+      tr.querySelector('.cell-uid').innerHTML = buildInput(uid, 'uid');
+      tr.querySelector('.cell-name').innerHTML = buildInput(name, 'name');
+      tr.querySelector('.cell-cls').innerHTML = buildInput(cls, 'cls');
+      
+      btn.outerHTML = `<button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="saveStudentRow(this)">💾</button>`;
+    }
+
+    function saveStudentRow(btn) {
+      const tr = btn.closest('tr');
+      const payload = {
+        row: tr.getAttribute('data-row') === 'new' ? null : parseInt(tr.getAttribute('data-row')),
+        uid: tr.querySelector('input[data-field="uid"]').value,
+        name: tr.querySelector('input[data-field="name"]').value,
+        cls: tr.querySelector('input[data-field="cls"]').value
+      };
+      
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManageStudents').click(); // refresh
+      }).saveManageStudent(payload);
+    }
+
+    function clearStudentRow(btn, row) {
+      if(!confirm("Are You Sure You Want To Clear This Student's Data?")) return;
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManageStudents').click();
+      }).clearManageStudent(row);
+    }
+
+    // --- 2. YT DATA MANAGEMENT ---
+    document.getElementById('btnManageYtData').addEventListener('click', () => {
+      const tUid = document.getElementById('teacherUid').value.trim();
+      if(!tUid) { showToast('Please Enter Teacher UID First', 'warn'); return; }
+      
+      currentManageContext = 'YTDATA';
+      manageTitle.textContent = '🧑‍🏫 Manage YT Data';
+      thead.innerHTML = '<tr><th style="padding:10px; text-align:left;">Class</th><th style="padding:10px; text-align:left;">YT Link</th><th style="padding:10px; text-align:left;">UID</th><th style="padding:10px; text-align:left;">Teacher Name</th><th style="padding:10px; text-align:left;">Timer</th><th style="padding:10px; text-align:center;">Action</th></tr>';
+      manageModal.style.display = 'flex';
+      showLoadingTable(6);
+      
+      google.script.run.withSuccessHandler(res => {
+        if(!res.ok) { tbody.innerHTML = `<tr><td colspan="6">${res.message}</td></tr>`; return; }
+        renderYtDataTable(res.data, tUid);
+      }).getManageYtData(tUid);
+    });
+
+    function renderYtDataTable(data, tUid) {
+      let html = '';
+      data.forEach(r => {
+        html += `<tr data-row="${r.row}" class="draggable-row" style="border-bottom:1px solid #334155;">
+          <td style="padding:8px;" class="cell-cls">${r.cls}</td>
+          <td style="padding:8px;" class="cell-link">${r.link}</td>
+          <td style="padding:8px;" class="cell-uid">${r.uid}</td>
+          <td style="padding:8px;" class="cell-tname">${r.tname}</td>
+          <td style="padding:8px;" class="cell-timer">${r.timer}</td>
+          <td style="padding:8px; text-align:center; width:140px;">
+             <span style="cursor:grab; margin-right:8px; font-size:16px; color:#9ca3af;" title="Drag to reorder">☰</span>
+             <button class="secondary edit-btn" onclick="editYtRow(this)">✏️</button>
+             <button class="danger delete-btn" style="padding:5px 5px; border-radius:50px;" onclick="clearYtRow(this, ${r.row})">🗑️</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+      tbody.setAttribute('data-current-tuid', tUid);
+      enableDragAndDrop();
+    }
+
+    function editYtRow(btn) {
+      const tr = btn.closest('tr');
+      const cls = tr.querySelector('.cell-cls').textContent;
+      const link = tr.querySelector('.cell-link').textContent;
+      const uid = tr.querySelector('.cell-uid').textContent;
+      const tname = tr.querySelector('.cell-tname').textContent;
+      const timer = tr.querySelector('.cell-timer').textContent;
+      
+      tr.querySelector('.cell-cls').innerHTML = buildInput(cls, 'cls');
+      tr.querySelector('.cell-link').innerHTML = buildInput(link, 'link');
+      tr.querySelector('.cell-uid').innerHTML = buildInput(uid, 'uid');
+      tr.querySelector('.cell-tname').innerHTML = buildInput(tname, 'tname');
+      tr.querySelector('.cell-timer').innerHTML = buildInput(timer, 'timer');
+      
+      btn.outerHTML = `<button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="saveYtRow(this)">💾</button>`;
+    }
+
+    function saveYtRow(btn) {
+      const tr = btn.closest('tr');
+      const payload = {
+        row: tr.getAttribute('data-row') === 'new' ? null : parseInt(tr.getAttribute('data-row')),
+        cls: tr.querySelector('input[data-field="cls"]').value,
+        link: tr.querySelector('input[data-field="link"]').value,
+        uid: tr.querySelector('input[data-field="uid"]').value,
+        tname: tr.querySelector('input[data-field="tname"]').value,
+        timer: tr.querySelector('input[data-field="timer"]').value
+      };
+      
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManageYtData').click();
+      }).saveManageYtData(payload);
+    }
+
+    function clearYtRow(btn, row) {
+      if(!confirm("Are You Sure You Want To Delete This Class Mapping?")) return;
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManageYtData').click();
+      }).clearManageYtData(row);
+    }
+
+    // --- 3. PLAYLIST MANAGEMENT ---
+    document.getElementById('btnManagePlaylist').addEventListener('click', () => {
+      const cls = document.getElementById('teacherClassSelect').value;
+      if(!cls) { showToast('Select Class First from Dropdown', 'warn'); return; }
+      
+      currentManageContext = 'PLAYLIST';
+      manageTitle.textContent = `🎵 Manage Playlist (${cls})`;
+      thead.innerHTML = '<tr><th style="padding:10px; text-align:left;">Subject</th><th style="padding:10px; text-align:left;">Chapter Name</th><th style="padding:10px; text-align:left;">YT Link</th><th style="padding:10px; text-align:center;">Action</th></tr>';
+      manageModal.style.display = 'flex';
+      showLoadingTable(4);
+      
+      google.script.run.withSuccessHandler(res => {
+        if(!res.ok) { tbody.innerHTML = `<tr><td colspan="4">${res.message}</td></tr>`; return; }
+        renderPlaylistTable(res.data, cls);
+      }).getManagePlaylist(cls);
+    });
+
+    function renderPlaylistTable(data, cls) {
+      let html = '';
+      data.forEach(r => {
+        html += `<tr data-row="${r.row}" data-col="${r.col}" class="draggable-row" style="border-bottom:1px solid #334155;">
+          <td style="padding:8px;" class="cell-sub">${r.subject}</td>
+          <td style="padding:8px;" class="cell-chap">${r.chapter}</td>
+          <td style="padding:8px;" class="cell-link">${r.link}</td>
+          <td style="padding:8px; text-align:center; width:140px;">
+             <span style="cursor:grab; margin-right:8px; font-size:16px; color:#9ca3af;" title="Drag to reorder">☰</span>
+             <button class="secondary edit-btn" onclick="editPlaylistRow(this)">✏️</button>
+             <button class="danger delete-btn" style="padding:5px 5px; border-radius:50px;" onclick="clearPlaylistRow(this, ${r.row}, ${r.col})">🗑️</button>
+          </td>
+        </tr>`;
+      });
+      tbody.innerHTML = html;
+      tbody.setAttribute('data-current-cls', cls);
+      enableDragAndDrop();
+    }
+
+    function editPlaylistRow(btn) {
+      const tr = btn.closest('tr');
+      const sub = tr.querySelector('.cell-sub').textContent;
+      const chap = tr.querySelector('.cell-chap').textContent;
+      const link = tr.querySelector('.cell-link').textContent;
+      
+      tr.querySelector('.cell-sub').innerHTML = buildInput(sub, 'subject');
+      tr.querySelector('.cell-chap').innerHTML = buildInput(chap, 'chapter');
+      tr.querySelector('.cell-link').innerHTML = buildInput(link, 'link');
+      
+      btn.outerHTML = `<button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="savePlaylistRow(this)">💾</button>`;
+    }
+
+    function savePlaylistRow(btn) {
+      const tr = btn.closest('tr');
+      const cls = tbody.getAttribute('data-current-cls');
+      const payload = {
+        row: tr.getAttribute('data-row') === 'new' ? null : parseInt(tr.getAttribute('data-row')),
+        col: tr.getAttribute('data-row') === 'new' ? null : parseInt(tr.getAttribute('data-col')),
+        subject: tr.querySelector('input[data-field="subject"]').value,
+        chapter: tr.querySelector('input[data-field="chapter"]').value,
+        link: tr.querySelector('input[data-field="link"]').value
+      };
+      
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManagePlaylist').click();
+      }).saveManagePlaylist(payload, cls);
+    }
+
+    function clearPlaylistRow(btn, row, col) {
+      if(!confirm("Are You Sure You Want To Delete This Chapter?")) return;
+      btn.textContent = '⏳';
+      google.script.run.withSuccessHandler(res => {
+        showToast(res.message, res.ok ? 'ok' : 'warn');
+        if(res.ok) document.getElementById('btnManagePlaylist').click();
+      }).clearManagePlaylist(row, col);
+    }
+
+    // --- GLOBAL ADD NEW BUTTON ---
+    document.getElementById('btnAddNewRow').addEventListener('click', () => {
+      let trHtml = '';
+      if (currentManageContext === 'STUDENTS') {
+        trHtml = `<tr data-row="new" style="border-bottom:1px solid #334155;">
+          <td style="padding:8px;">${buildInput('', 'uid')}</td>
+          <td style="padding:8px;">${buildInput('', 'name')}</td>
+          <td style="padding:8px;">${buildInput('', 'cls')}</td>
+          <td style="padding:8px; text-align:center;"><button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="saveStudentRow(this)">💾</button></td>
+        </tr>`;
+      } else if (currentManageContext === 'YTDATA') {
+        const tUid = tbody.getAttribute('data-current-tuid');
+        trHtml = `<tr data-row="new" style="border-bottom:1px solid #334155;">
+          <td style="padding:8px;">${buildInput('', 'cls')}</td>
+          <td style="padding:8px;">${buildInput('', 'link')}</td>
+          <td style="padding:8px;">${buildInput(tUid, 'uid')}</td>
+          <td style="padding:8px;">${buildInput('', 'tname')}</td>
+          <td style="padding:8px;">${buildInput('30', 'timer')}</td>
+          <td style="padding:8px; text-align:center;"><button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="saveYtRow(this)">💾</button></td>
+        </tr>`;
+      } else if (currentManageContext === 'PLAYLIST') {
+        trHtml = `<tr data-row="new" style="border-bottom:1px solid #334155;">
+          <td style="padding:8px;">${buildInput('', 'subject')}</td>
+          <td style="padding:8px;">${buildInput('', 'chapter')}</td>
+          <td style="padding:8px;">${buildInput('', 'link')}</td>
+          <td style="padding:8px; text-align:center;"><button class="primary" style="padding:7px 14px; border-radius:15px;" onclick="savePlaylistRow(this)">💾</button></td>
+        </tr>`;
+      }
+      tbody.insertAdjacentHTML('beforeend', trHtml);
+      tbody.lastElementChild.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    });
+    // NAYA DRAG & DROP LOGIC (Ise render functions ke theek niche paste karein)
+    function enableDragAndDrop() {
+      const rows = document.querySelectorAll('#manageTableBody tr:not([data-row="new"])');
+      let draggedRow = null;
+
+      rows.forEach(row => {
+        row.setAttribute('draggable', true);
+        
+        row.addEventListener('dragstart', function(e) {
+          draggedRow = this;
+          e.dataTransfer.effectAllowed = 'move';
+          setTimeout(() => this.style.opacity = '0.4', 0);
+        });
+
+        row.addEventListener('dragover', function(e) {
+          e.preventDefault();
+          this.classList.add('drag-over');
+        });
+
+        row.addEventListener('dragleave', function(e) {
+          this.classList.remove('drag-over');
+        });
+
+        row.addEventListener('drop', function(e) {
+          e.preventDefault();
+          this.classList.remove('drag-over');
+          
+          if (draggedRow !== this) {
+            let allRows = Array.from(tbody.querySelectorAll('tr:not([data-row="new"])'));
+            let draggedIdx = allRows.indexOf(draggedRow);
+            let targetIdx = allRows.indexOf(this);
+            
+            if (draggedIdx < targetIdx) {
+              this.parentNode.insertBefore(draggedRow, this.nextSibling);
+            } else {
+              this.parentNode.insertBefore(draggedRow, this);
+            }
+            saveReorderedTable(); // Data send to backend
+          }
+        });
+
+        row.addEventListener('dragend', function() {
+          this.style.opacity = '1';
+          draggedRow = null;
+          document.querySelectorAll('.drag-over').forEach(el => el.classList.remove('drag-over'));
+        });
+      });
+    }
+
+    function saveReorderedTable() {
+       const rows = Array.from(tbody.querySelectorAll('tr:not([data-row="new"])'));
+       if(rows.length < 2) return;
+
+       if (currentManageContext === 'PLAYLIST') {
+           // --- PLAYLIST KA EXISTING LOGIC ---
+           let slots = [];
+           let newData = [];
+           rows.forEach(tr => {
+              slots.push({
+                 row: parseInt(tr.getAttribute('data-row')),
+                 col: parseInt(tr.getAttribute('data-col')) || null
+              });
+              newData.push([
+                 tr.querySelector('.cell-chap').textContent,
+                 tr.querySelector('.cell-link').textContent
+              ]);
+           });
+
+           let sortedSlots = [...slots].sort((a,b) => {
+              if(a.row !== b.row) return a.row - b.row;
+              if(a.col && b.col) return a.col - b.col;
+              return 0;
+           });
+           let payload = [];
+           for(let i=0; i<sortedSlots.length; i++) {
+              payload.push({
+                 targetRow: sortedSlots[i].row,
+                 targetCol: sortedSlots[i].col,
+                 values: newData[i]
+              });
+           }
+
+           showToast('Updating Positions...', 'ok');
+           google.script.run.withSuccessHandler(res => {
+              if(!res.ok) showToast(res.message, 'warn');
+              else showToast('Order Updated!', 'ok');
+           }).saveReorderedCells(currentManageContext, payload);
+
+       } else {
+           // Naya visual order nikalna (Data text ki jagah sirf Row ID bhej rahe hain)
+           let orderedOriginalRows = rows.map(tr => parseInt(tr.getAttribute('data-row')));
+
+           showToast('Updating Full Row Positions...', 'ok');
+           google.script.run.withSuccessHandler(res => {
+              if(!res.ok) showToast(res.message, 'warn');
+              else {
+                  showToast('Full Row Order Updated!', 'ok');
+                  // DOM me bhi update karna taaki bina page refresh kiye dobara drag kaam kare
+                  let sortedSlots = [...orderedOriginalRows].sort((a,b) => a - b);
+                  rows.forEach((tr, i) => tr.setAttribute('data-row', sortedSlots[i]));
+              }
+           }).saveReorderedCells(currentManageContext, orderedOriginalRows);
+       }
+    }
+    // ===== TOGGLE SMOOTH EXPAND HISTORY ROW =====
+    function toggleStudentHistory(uid, type, iconEl) {
+      const rowEl = document.getElementById('hist-row-' + uid);
+      const divEl = document.getElementById('hist-div-' + uid);
+      
+      const isOpen = divEl.classList.contains('open');
+      const currentType = divEl.getAttribute('data-current-type');
+      
+      // Reset all icons in this row back to ▼
+      const tr = iconEl.closest('tr');
+      tr.querySelectorAll('.hist-toggle').forEach(el => {
+        el.textContent = '▼';
+        el.style.background = el.style.background.replace('0.6)', '0.2)'); // Reset highlight
+      });
+
+      // Agar same dropdown par click kiya hai jo already open hai, to close kar do
+      if (isOpen && currentType === type) {
+        divEl.classList.remove('open');
+        setTimeout(() => { rowEl.style.display = 'none'; }, 300); // 300ms wait for animation
+        divEl.setAttribute('data-current-type', '');
+        return;
+      }
+
+      // Open ya Switch Content
+      iconEl.textContent = '▲';
+      iconEl.style.background = iconEl.style.background.replace('0.2)', '0.6)'); // Highlight active icon
+      
+      divEl.setAttribute('data-current-type', type);
+      rowEl.style.display = 'table-row';
+      
+      // Delay for CSS transition to trigger properly
+      setTimeout(() => {
+        divEl.classList.add('open');
+      }, 10);
+      
+      divEl.innerHTML = '<div style="text-align:center; padding:20px; color:var(--text-soft);">Loading Data... Please Wait ⏳</div>';
+
+      // Fetch History from GS
+      google.script.run
+        .withSuccessHandler(res => {
+          // Double check ki user ne click karke close to nahi kar diya tab tak
+          if (divEl.getAttribute('data-current-type') !== type) return;
+          
+          if (!res.ok) {
+            divEl.innerHTML = `<div style="color:#ef4444; text-align:center; padding:10px;">Error: ${res.message}</div>`;
+            return;
+          }
+          
+          let html = '';
+          
+          // --- 1. PRESENT SQUARES ---
+          if (type === 'PRESENT') {
+            if (res.presentDates.length === 0) {
+              html = '<div style="text-align:center; padding:15px; color:#94a3b8;">No Present Record Found.</div>';
+            } else {
+              html = '<div style="display:flex; flex-wrap:wrap; gap:8px; padding-bottom:8px;">';
+              res.presentDates.forEach(date => {
+                html += `
+                  <div style="width:70px; padding:10px 4px; border:1px solid #22c55e; background:rgba(34,197,94,0.1); border-radius:8px; text-align:center;">
+                    <div style="font-size:10px; color:#cbd5e1; margin-bottom:4px;">${date}</div>
+                    <div style="font-size:16px; font-weight:700; color:#4ade80;">P</div>
+                  </div>
+                `;
+              });
+              html += '</div>';
+            }
+          } 
+          
+          // --- 2. WATCH HISTORY (Table) ---
+          else if (type === 'TOTAL_WATCH' || type === 'TODAY_WATCH') {
+            const list = type === 'TOTAL_WATCH' ? res.totalWatchList : res.todayWatchList;
+            if (list.length === 0) {
+              html = '<div style="text-align:center; padding:15px; color:#94a3b8;">No Watch History Found.</div>';
+            } else {
+              html = `<table style="width:100%; border-collapse:collapse; font-size:11px; margin-bottom:8px;">
+                        <thead>
+                          <tr style="border-bottom:1px solid rgba(55,65,81,0.9); color:#94a3b8;">
+                            <th style="text-align:left; padding:8px 4px;">Date</th>
+                            <th style="text-align:left; padding:8px 4px;">Video Title</th>
+                            <th style="text-align:center; padding:8px 4px;">Watch Time</th>
+                            <th style="text-align:center; padding:8px 4px;">Action</th>
+                          </tr>
+                        </thead>
+                        <tbody>`;
+              
+              list.forEach(v => {
+                const vidUrl = (v.url === 'N/A' || !v.url) ? '#' : v.url;
+                const btnHtml = vidUrl !== '#' 
+                  ? `<a href="${vidUrl}" target="_blank" style="display:inline-block; background:rgba(239,68,68,0.15); border:1px solid rgba(239,68,68,0.5); color:#f87171; padding:4px 10px; border-radius:6px; text-decoration:none; font-weight:500; transition:0.2s;" onmouseover="this.style.background='#ef4444'; this.style.color='#fff'" onmouseout="this.style.background='rgba(239,68,68,0.15)'; this.style.color='#f87171'">▶ Play</a>` 
+                  : '<span class="muted">Missing</span>';
+                  
+                html += `
+                  <tr style="border-bottom:1px solid rgba(31,41,55,0.4);">
+                    <td style="padding:10px 4px; color:#cbd5e1;">${v.date || 'Today'}</td>
+                    <td style="padding:10px 4px; color:#f8fafc;">${v.title}</td>
+                    <td style="text-align:center; padding:10px 4px; color:#fb923c;">${v.watchTime}m</td>
+                    <td style="text-align:center; padding:10px 4px;">${btnHtml}</td>
+                  </tr>
+                `;
+              });
+              html += '</tbody></table>';
+            }
+          }
+          
+          divEl.innerHTML = html;
+        })
+        .withFailureHandler(err => {
+          if (divEl.getAttribute('data-current-type') === type) {
+            divEl.innerHTML = `<div style="color:#ef4444; text-align:center; padding:10px;">Network Error: ${err.message}</div>`;
+          }
+        })
+        .getStudentHistoryData(uid);
+    }
+  </script>
+</body>
+</html>
